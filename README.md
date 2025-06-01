@@ -145,3 +145,5 @@ See `.env.example` for all available environment variables.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+![alt text](<Screenshot from 2025-06-01 22-39-17.png>)
