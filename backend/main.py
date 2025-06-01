@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from agents.resume_analyzer import ResumeAnalyzerAgent
 from agents.mock_interviewer import MockInterviewerAgent
 from agents.dsa_evaluator import DSAEvaluatorAgent
@@ -6,8 +7,22 @@ from agents.behavioural_coach import BehavioralCoachAgent
 from agents.performance_tracker import PerformanceTrackerAgent
 from database.models import init_db, save_session, get_session
 import uuid
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace with your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # Initialize database
 init_db()
@@ -71,3 +86,9 @@ async def get_session_data(session_id: str):
     if not session:
         return {"error": "Session not found"}
     return session
+
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
