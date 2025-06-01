@@ -1,8 +1,13 @@
 import streamlit as st
 import requests
+
+# Ensure user_id is always initialized in session state
+if "user_id" not in st.session_state:
+    st.session_state.user_id = "user123"
 import json
 import random
 from datetime import datetime
+from requests.exceptions import JSONDecodeError
 
 def get_fallback_questions(category=None):
     """Provide fallback interview questions if backend fails"""
@@ -41,11 +46,6 @@ def get_fallback_questions(category=None):
     # Shuffle and return 3 questions
     random.shuffle(questions)
     return questions[:3]
-
-            "Clear articulation of main points",
-            "Professional demeanor throughout"
-        ]
-    }
     
 def get_simulated_resume_result(resume_text=""):
     """Provide simulated resume analysis results when backend is unavailable"""
@@ -89,7 +89,7 @@ def get_simulated_resume_result(resume_text=""):
 import os
 
 # Get the backend URL from environment variable or use the default
-BACKEND_URL = os.environ.get("BACKEND_URL", "https://ain-backend-api.onrender.com")
+BACKEND_URL = os.environ.get("BACKEND_URL", "https://ain-backend-v3.onrender.com")
 
 # For local testing, uncomment the line below
 # BACKEND_URL = "http://localhost:8000"
@@ -99,6 +99,11 @@ st.title("🤖 AI NinjaCoach - Smart Interview Prep")
 
 # Tabs for each agent functionality
 tab1, tab2, tab3, tab5, tab6 = st.tabs(["🧑‍💼 Interview", "💻 DSA", "📄 Resume Analyzer", "📊 Past Performance", "🔄 Combined Analysis"])
+
+# Add Debug Options
+st.markdown("---")
+st.title("Debug Options")
+debug_mode = st.checkbox("Debug Mode")
 
 # ------------------ Interview Tab ------------------ #
 with tab1:
@@ -224,7 +229,7 @@ with tab2:
     
     # Code input
     dsa_code = st.text_area("Your Python solution", height=300)
-    user_id = st.text_input("Your User ID (for tracking progress)", value="user123", key="dsa_user_id")
+    user_id = st.text_input("Your User ID (for tracking progress)", value=st.session_state.user_id, key="dsa_user_id")
     
     if st.button("Analyze Code"):
         if not dsa_code.strip():
@@ -280,20 +285,22 @@ with tab3:
     # Resume input options
     input_method = st.radio("Input Method", ["Paste Resume Text", "Upload PDF"])
     
+    # Initialize variables
     resume_text = ""
     uploaded_file = None
     
+    # Create separate containers for each input method
     if input_method == "Paste Resume Text":
         resume_text = st.text_area("Paste your resume text here", height=300)
     else:
         uploaded_file = st.file_uploader("Upload your resume PDF", type=["pdf"])
-        if uploaded_file:
+        if uploaded_file is not None:
+            if uploaded_file.type != "application/pdf":
+                st.error("Please upload a valid PDF file")
+                st.stop()
             st.success(f"✅ PDF uploaded: {uploaded_file.name}")
     
     user_id = st.text_input("Your User ID (for tracking progress)", value="user123", key="resume_user_id")
-    
-    # Toggle for using real backend vs. simulation
-    use_real_backend = st.checkbox("Use real backend processing (experimental)", value=False, key="resume_use_real_backend")
     
     if st.button("Analyze Resume"):
         if not resume_text.strip() and input_method == "Paste Resume Text":
@@ -305,74 +312,86 @@ with tab3:
             try:
                 result = None
                 
-                if use_real_backend:
-                    try:
-                        if input_method == "Paste Resume Text":
-                            # Send resume text for analysis
-                            st.info("Sending resume to local backend for analysis...")
-                            payload = {"text": resume_text}
-                            response = requests.post(f"{BACKEND_URL}/analyze/resume", json=payload)
-                            response.raise_for_status()
-                            result = response.json()
-                            st.success("Resume analysis completed successfully!")
+                try:
+                    if input_method == "Paste Resume Text":
+                        # Send resume text for analysis
+                        st.info("Sending resume to local backend for analysis...")
+                        payload = {"text": resume_text}
+                        response = requests.post(f"{BACKEND_URL}/analyze/resume", json=payload)
+                        response.raise_for_status()
+                        result = response.json()
+                        st.success("Resume analysis completed successfully!")
+                    else:
+                        # Send PDF for analysis
+                        st.info("Sending PDF to local backend for analysis...")
+                        # Properly read PDF content
+                        pdf_content = uploaded_file.getvalue()
+                        if not pdf_content:
+                            st.error("Could not read PDF content. Please try again.")
                         else:
-                            # Send PDF for analysis
-                            st.info("Sending PDF to local backend for analysis...")
-                            files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "application/pdf")}
-                            response = requests.post(f"{BACKEND_URL}/analyze/resume/pdf", files=files)
+                            files = {"file": (uploaded_file.name, pdf_content, "application/pdf")}
+                            response = requests.post(f"{BACKEND_URL}/analyze/resume/pdf", files=files, timeout=30)
                             response.raise_for_status()
                             result = response.json()
                             st.success("Resume analysis completed successfully!")
                             
                             # Display extracted text preview if available
                             if "extracted_text" in result:
-                                with st.expander("View extracted text from PDF"):
+                                with st.expander("View extracted text from PDF", expanded=debug_mode):
                                     st.text(result["extracted_text"])
-                    except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError) as e:
-                        st.warning(f"Local backend error: {str(e)}. Trying deployed backend...")
-                        try:
-                            # Fallback to deployed backend
-                            fallback_url = "https://ain-v2-production.up.railway.app"
-                            if input_method == "Paste Resume Text":
-                                st.info("Sending resume to deployed backend for analysis...")
-                                payload = {"text": resume_text}
-                                response = requests.post(f"{fallback_url}/analyze/resume", json=payload)
-                                response.raise_for_status()
-                                result = response.json()
-                                st.success("Resume analysis completed successfully!")
+                except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError) as e:
+                    st.warning(f"Local backend error: {str(e)}. Trying deployed backend...")
+                    try:
+                        # Fallback to deployed backend
+                        fallback_url = "https://ain-backend-v3.onrender.com"
+                        if input_method == "Paste Resume Text":
+                            st.info("Sending resume to deployed backend for analysis...")
+                            payload = {"text": resume_text}
+                            response = requests.post(f"{fallback_url}/analyze/resume", json=payload)
+                            response.raise_for_status()
+                            result = response.json()
+                            st.success("Resume analysis completed successfully!")
+                        else:
+                            st.info("Sending PDF to deployed backend for analysis...")
+                            # Properly read PDF content
+                            pdf_content = uploaded_file.getvalue()
+                            if not pdf_content:
+                                st.error("Could not read PDF content. Please try again.")
                             else:
-                                st.info("Sending PDF to deployed backend for analysis...")
-                                files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "application/pdf")}
-                                response = requests.post(f"{fallback_url}/analyze/resume/pdf", files=files)
+                                files = {"file": (uploaded_file.name, pdf_content, "application/pdf")}
+                                response = requests.post(f"{fallback_url}/analyze/resume/pdf", files=files, timeout=30)
                                 response.raise_for_status()
                                 result = response.json()
                                 st.success("Resume analysis completed successfully!")
                                 
                                 # Display extracted text preview if available
                                 if "extracted_text" in result:
-                                    with st.expander("View extracted text from PDF"):
+                                    with st.expander("View extracted text from PDF", expanded=debug_mode):
                                         st.text(result["extracted_text"])
-                        except Exception as e:
-                            # If both backends fail, use simulated response
-                            st.warning(f"Deployed backend error: {str(e)}. Using simulated response.")
-                            if input_method == "Paste Resume Text":
-                                result = get_simulated_resume_result(resume_text)
-                            else:
-                                result = get_simulated_resume_result("[PDF content would be extracted here in a real implementation]")
                     except Exception as e:
-                        st.error(f"Unexpected error: {str(e)}. Using simulated response.")
+                        # If both backends fail, use simulated response
+                        st.warning(f"Deployed backend error: {str(e)}. Using simulated response.")
+                        if 'response' in locals() and hasattr(response, 'text'):
+                            with st.expander("View detailed error response from deployed backend"):
+                                st.text(f"Status code: {response.status_code if hasattr(response, 'status_code') else 'Unknown'}")
+                                st.text(f"Response content: {response.text}")
+                                
                         if input_method == "Paste Resume Text":
                             result = get_simulated_resume_result(resume_text)
                         else:
                             result = get_simulated_resume_result("[PDF content would be extracted here in a real implementation]")
-                else:
-                    # Use simulated response directly
-                    st.info("Using simulated response for resume analysis (toggle real backend processing to use actual AI analysis)")
+                except Exception as e:
+                    st.error(f"Unexpected error: {str(e)}. Using simulated response.")
+                    if 'response' in locals() and hasattr(response, 'text'):
+                        with st.expander("View detailed error response"):
+                            st.text(f"Status code: {response.status_code if hasattr(response, 'status_code') else 'Unknown'}")
+                            st.text(f"Response content: {response.text}")
+                    
                     if input_method == "Paste Resume Text":
                         result = get_simulated_resume_result(resume_text)
                     else:
                         result = get_simulated_resume_result("[PDF content would be extracted here in a real implementation]")
-                        with st.expander("View extracted text from PDF"):
+                        with st.expander("View extracted text from PDF", expanded=debug_mode):
                             st.text("[This is a simulated PDF extraction. In a real implementation, the actual text from your PDF would be shown here.]")
 
                 
@@ -393,7 +412,7 @@ with tab3:
                         track_response.raise_for_status()
                     except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError, requests.exceptions.Timeout) as e:
                         # Fallback to deployed backend
-                        fallback_url = "https://ain-v2-production.up.railway.app"
+                        fallback_url = "https://ain-backend-v3.onrender.com"
                         track_response = requests.post(f"{fallback_url}/track/session", json=session_data, timeout=3)
                         # Don't raise for status here - if this fails, just continue silently
                 except Exception as e:
@@ -447,6 +466,52 @@ with tab3:
 
 
 # ------------------ Past Performance Tab ------------------ #
+
+# ------------------ Career Coach (Orchestrator) Tab ------------------ #
+with st.container():
+    st.header("Career Coach (AI Orchestrator)")
+    st.markdown("Let the AI orchestrator guide your end-to-end interview prep!")
+    user_id = st.text_input("User ID", value="user123", key="orchestrator_user_id")
+    goal = st.text_input("Your Career Goal", value="Get a backend developer job at Google", key="orchestrator_goal")
+    resume_text = st.text_area("Paste your resume text (optional)", height=150, key="orchestrator_resume")
+    code = st.text_area("Paste your code solution (optional)", height=150, key="orchestrator_code")
+    interview_answers = st.text_area("Paste your interview answers (comma separated, optional)", height=100, key="orchestrator_answers")
+    if st.button("Run Orchestrator Analysis"):
+        st.info("Running orchestrator agent workflow...")
+        try:
+            payload = {
+                "user_id": user_id,
+                "goal": goal,
+                "resume_text": resume_text or None,
+                "code": code or None,
+                "interview_answers": [a.strip() for a in interview_answers.split(",") if a.strip()] if interview_answers else None
+            }
+            response = requests.post(f"{BACKEND_URL}/orchestrate", json=payload)
+            if response.status_code == 200:
+                result = response.json()
+                st.success("✅ Orchestrator Analysis Complete!")
+                st.subheader("Summary of Results")
+                st.json(result)
+                # Optionally, show each agent's output in expandable sections
+                if result.get("resume"):
+                    with st.expander("Resume Analysis"):
+                        st.json(result["resume"])
+                if result.get("dsa"):
+                    with st.expander("Coding Evaluation"):
+                        st.json(result["dsa"])
+                if result.get("interview"):
+                    with st.expander("Mock Interview Feedback"):
+                        st.json(result["interview"])
+                if result.get("behavioral"):
+                    with st.expander("Behavioral Coaching"):
+                        st.json(result["behavioral"])
+                if result.get("performance"):
+                    with st.expander("Performance Dashboard"):
+                        st.json(result["performance"])
+            else:
+                st.error(f"Backend error: {response.text}")
+        except Exception as e:
+            st.error(f"❌ Error: {e}")
 
 # ------------------ Performance Dashboard Tab ------------------ #
 with tab5:
@@ -647,4 +712,3 @@ with tab6:
             except Exception as e:
                 st.error(f"❌ Error: {e}")
                 st.error(f"Response: {response.text if 'response' in locals() else 'No response'}")
-

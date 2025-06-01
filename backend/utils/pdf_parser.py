@@ -23,7 +23,7 @@ def extract_text_from_pdf(file_content: bytes) -> str:
     # Try PyPDF2 first (faster but sometimes less accurate)
     try:
         text = _extract_with_pypdf2(file_content)
-        if text and len(text.strip()) > 100:  # Ensure we got meaningful content
+        if text and len(text.strip()) > 50:  # Ensure we got meaningful content
             return text
     except Exception as e:
         print(f"PyPDF2 extraction failed: {str(e)}")

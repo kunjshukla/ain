@@ -1,6 +1,6 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import PromptTemplate
-from utils.prompts.behavioral_prompts import BEHAVIORAL_EVALUATION_PROMPT
+from backend.utils.prompts.behavioral_prompts import BEHAVIORAL_EVALUATION_PROMPT
 import os
 from dotenv import load_dotenv
 
@@ -24,7 +24,15 @@ class BehavioralCoachAgent:
 
     def evaluate_behavioral(self, user_answers):
         if not user_answers:
-            return "- Strengths: [None]\n- Weaknesses: [No answers provided]\n- Suggestions: [Answer behavioral questions]"
+            return {
+                "strengths": ["None"],
+                "weaknesses": ["No answers provided"],
+                "suggestions": ["Answer behavioral questions"]}
+        if not self.llm:
+            return {
+                "strengths": ["None"],
+                "weaknesses": ["No answers provided"],
+                "suggestions": ["Answer behavioral questions"]}
         answers_str = ", ".join(user_answers)
         formatted_prompt = self.prompt.format(user_answers=answers_str)
         response = self.llm.invoke(formatted_prompt)

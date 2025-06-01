@@ -22,35 +22,35 @@ except ImportError:
 
 # Import agents with try/except to handle missing dependencies
 try:
-    from agents.resume_analyzer import ResumeAnalyzerAgent
+    from backend.agents.resume_analyzer import ResumeAnalyzerAgent
     resume_agent_available = True
 except ImportError as e:
     print(f"Warning: ResumeAnalyzerAgent not available: {e}")
     resume_agent_available = False
 
 try:
-    from agents.mock_interviewer import MockInterviewerAgent
+    from backend.agents.mock_interviewer import MockInterviewerAgent
     interview_agent_available = True
 except ImportError as e:
     print(f"Warning: MockInterviewerAgent not available: {e}")
     interview_agent_available = False
 
 try:
-    from agents.dsa_evaluator import DSAEvaluatorAgent
+    from backend.agents.dsa_evaluator import DSAEvaluatorAgent
     dsa_agent_available = True
 except ImportError as e:
     print(f"Warning: DSAEvaluatorAgent not available: {e}")
     dsa_agent_available = False
 
 try:
-    from agents.behavioural_coach import BehavioralCoachAgent
+    from backend.agents.behavioural_coach import BehavioralCoachAgent
     behavioral_coach_available = True
 except ImportError as e:
     print(f"Warning: BehavioralCoachAgent not available: {e}")
     behavioral_coach_available = False
 
 try:
-    from agents.performance_tracker import PerformanceTrackerAgent
+    from backend.agents.performance_tracker import PerformanceTrackerAgent
     performance_tracker_available = True
 except ImportError as e:
     print(f"Warning: PerformanceTrackerAgent not available: {e}")
@@ -637,6 +637,25 @@ def track_session(request: SessionRequest):
 # Video interview endpoint removed
 
 # Video interview questions endpoint removed
+
+# ---------------- Orchestrator Agent Endpoint ---------------- #
+from backend.agents.orchestrator_agent import OrchestratorAgent
+from backend.orchestrator_schema import OrchestratorRequest, OrchestratorResponse
+
+@app.post("/orchestrate", response_model=OrchestratorResponse)
+def orchestrate(request: OrchestratorRequest):
+    try:
+        agent = OrchestratorAgent()
+        results = agent.run_workflow(
+            user_id=request.user_id,
+            goal=request.goal,
+            resume_text=request.resume_text,
+            code=request.code,
+            interview_answers=request.interview_answers
+        )
+        return OrchestratorResponse(**results)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Orchestrator error: {e}")
 
 if __name__ == "__main__":
     import uvicorn

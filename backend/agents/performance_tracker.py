@@ -245,7 +245,11 @@ class PerformanceTrackerAgent:
     def get_user_performance(self, user_id: str) -> Dict[str, Any]:
         """Get comprehensive performance report for a user."""
         if user_id not in self.data["users"]:
-            raise ValueError(f"User {user_id} not found")
+            return {
+            "user_id": user_id,
+            "sessions": [],
+            "summary": "No performance data yet."
+        }
             
         user = self.data["users"][user_id]
         sessions = [s for s in self.data["sessions"] 
