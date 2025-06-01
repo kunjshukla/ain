@@ -1,66 +1,49 @@
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.prompts import PromptTemplate
-from utils.prompts.interview_prompts import INTERVIEW_QUESTION_PROMPT, INTERVIEW_FEEDBACK_PROMPT
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-google_api_key = os.getenv("GOOGLE_API_KEY")
+# agents/mock_interviewer.py
+from typing import List, Dict, Any
+import spacy
 
 class MockInterviewerAgent:
     def __init__(self):
-        self.question_prompt = PromptTemplate(
-            input_variables=["previous_answers"], 
-            template=INTERVIEW_QUESTION_PROMPT
-        )
-        self.feedback_prompt = PromptTemplate(
-            input_variables=["user_answers"], 
-            template=INTERVIEW_FEEDBACK_PROMPT
-        )
-        
-        if not google_api_key:
-            print("Warning: GOOGLE_API_KEY not found. Mock responses will be used.")
-            self.llm = None
-        else:
-            self.llm = ChatGoogleGenerativeAI(
-                model="gemini-1.5-pro", 
-                temperature=0.7, 
-                google_api_key=google_api_key
-            )
-
-    def get_next_question(self, previous_answers):
-        if not self.llm:
-            return "What experience do you have with Python?"
-            
-        answers_str = ", ".join(previous_answers) if previous_answers else "None"
-        formatted_prompt = self.question_prompt.format(previous_answers=answers_str)
-        response = self.llm.invoke(formatted_prompt)
-        return response.content
-
-    def conduct_interview(self, user_answers):
-        if not user_answers:
-            return [{"question": "Tell me about yourself.", "answer": "No answer provided"}]
-        
-        interview_results = []
-        questions = [
-            "Tell me about yourself.",
-            self.get_next_question([user_answers[0]]),
-            self.get_next_question(user_answers[:2])
+        self.nlp = spacy.load("en_core_web_lg")
+        self.questions = [
+            "Tell me about yourself",
+            "What is your greatest strength?",
+            "Describe a challenge you faced and how you overcame it"
         ]
         
-        for i, answer in enumerate(user_answers[:3]):
-            interview_results.append({
-                "question": questions[i] if i < len(questions) else "No further questions.",
-                "answer": answer
-            })
-
-        # Generate feedback using the LLM
-        if not self.llm:
-            feedback = "This is a sample feedback. Please provide a valid Google API key for personalized feedback."
-        else:
-            answers_str = ", ".join(user_answers)
-            formatted_prompt = self.feedback_prompt.format(user_answers=answers_str)
-            response = self.llm.invoke(formatted_prompt)
-            feedback = response.content
+    def evaluate(self, answers: List[str]) -> Dict[str, Any]:
+        if len(answers) != len(self.questions):
+            raise ValueError("Number of answers must match number of questions")
             
-        return {"responses": interview_results, "feedback": feedback}
+        evaluations = []
+        total_score = 0
+        
+        for i, (question, answer) in enumerate(zip(self.questions, answers)):
+            evaluation = self._evaluate_answer(question, answer)
+            evaluations.append({
+                "question": question,
+                "answer": answer,
+                "evaluation": evaluation
+            })
+            total_score += evaluation["score"]
+            
+        avg_score = total_score / len(answers) if answers else 0
+            
+        return {
+            "evaluations": evaluations,
+            "average_score": avg_score,
+            "improvement_areas": self._identify_improvement_areas(evaluations),
+            "overall_feedback": self._generate_overall_feedback(avg_score)
+        }
+        
+    def _evaluate_answer(self, question: str, answer: str) -> Dict[str, Any]:
+        # Implement answer evaluation logic
+        return {
+            "clarity": 0.8,
+            "relevance": 0.9,
+            "depth": 0.7,
+            "score": 0.8,
+            "feedback": "Good response, but could provide more specific examples."
+        }
+        
+    # Additional helper methods...

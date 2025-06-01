@@ -1,39 +1,58 @@
-from autogen import AssistantAgent
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.prompts import PromptTemplate
-from utils.prompts.resume_prompts import RESUME_ANALYSIS_PROMPT
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-google_api_key = os.getenv("GOOGLE_API_KEY")
-if not google_api_key:
-    print("Warning: GOOGLE_API_KEY not found. Please set the GOOGLE_API_KEY environment variable to use Gemini 1.5 Pro.")
-    llm = None
-else:
-    llm = ChatGoogleGenerativeAI(model="gemini-1.5-pro", temperature=0.7, google_api_key=google_api_key)
+# agents/resume_analyzer.py
+import spacy
+from typing import Dict, List, Any
+import re
 
 class ResumeAnalyzerAgent:
     def __init__(self):
-        self.prompt = PromptTemplate(input_variables=["resume_text"], template=RESUME_ANALYSIS_PROMPT)
-        if not google_api_key:
-            self.agent = None
-            self.llm = None
-            return
-        self.agent = AssistantAgent(name="ResumeAnalyzerAgent", llm_config={
-            "model": "gemini-1.5-pro",
-            "api_key": google_api_key,
-            "api_type": "google"
-        })
-        self.llm = llm
-
-    def analyze_resume(self, resume_text):
-        if not google_api_key:
-            return "Error: GOOGLE_API_KEY is not set. Please configure the environment variable to enable resume analysis."
-        if not resume_text:
-            return "- Strengths: [None]\n- Weaknesses: [No resume provided]\n- Suggestions: [Upload a resume]"
-        # Format the prompt using PromptTemplate
-        formatted_prompt = self.prompt.format(resume_text=resume_text)
-        # Invoke the LLM directly
-        response = self.llm.invoke(formatted_prompt)
-        return response.content
+        try:
+            self.nlp = spacy.load("en_core_web_lg")  # Try loading large model first
+        except OSError:
+            print("Warning: Using small English model (en_core_web_sm) instead of large model")
+            self.nlp = spacy.load("en_core_web_sm")  # Fallback to small model
+            
+        self.tech_skills = self._load_skills("data/technical_skills.txt")
+        self.soft_skills = self._load_skills("data/soft_skills.txt")
+    def _load_skills(self, filepath: str) -> List[str]:
+        try:
+            with open(filepath, 'r') as f:
+                return [line.strip().lower() for line in f if line.strip()]
+        except:
+            return []
+            
+    def _extract_skills(self, text: str) -> Dict[str, List[str]]:
+        doc = self.nlp(text.lower())
+        found_tech = set()
+        found_soft = set()
+        
+        for token in doc:
+            if token.text in self.tech_skills:
+                found_tech.add(token.text)
+            elif token.text in self.soft_skills:
+                found_soft.add(token.text)
+                
+        return {
+            "technical": list(found_tech),
+            "soft": list(found_soft)
+        }
+        
+    def _analyze_experience(self, text: str) -> Dict[str, Any]:
+        # Simple regex for experience extraction
+        experience = {}
+        # Add more sophisticated parsing as needed
+        return experience
+        
+    def analyze(self, text: str) -> Dict[str, Any]:
+        skills = self._extract_skills(text)
+        experience = self._analyze_experience(text)
+        
+        return {
+            "skills": skills,
+            "experience": experience,
+            "role_match": self._match_roles(text),
+            "suggested_questions": self._generate_questions(text),
+            "strengths": self._identify_strengths(text),
+            "weaknesses": self._identify_weaknesses(text)
+        }
+        
+    # Additional helper methods...

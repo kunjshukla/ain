@@ -1,98 +1,147 @@
-from fastapi import FastAPI, Request
+# main.py
+from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List, Dict, Any
+import uuid
+from datetime import datetime
+import spacy
+import json
 from agents.resume_analyzer import ResumeAnalyzerAgent
 from agents.mock_interviewer import MockInterviewerAgent
 from agents.dsa_evaluator import DSAEvaluatorAgent
 from agents.behavioural_coach import BehavioralCoachAgent
 from agents.performance_tracker import PerformanceTrackerAgent
-from database.models import init_db, save_session, get_session
-import uuid
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 app = FastAPI()
 
-# Add CORS middleware
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with your frontend URL
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-@app.get("/")
-def read_root():
-    return {"message": "Hello from AI NinjaCoach backend"}
+# Pydantic models
+class ResumeRequest(BaseModel):
+    text: str
+    format: str = "text"
 
+class InterviewRequest(BaseModel):
+    responses: List[str]
+    question_set: str = "default"
 
-# Initialize database
-init_db()
+class CodeRequest(BaseModel):
+    code: str
+    problem: str = "reverse_string"
 
+# Initialize agents
+resume_agent = ResumeAnalyzerAgent()
+interview_agent = MockInterviewerAgent()
+dsa_agent = DSAEvaluatorAgent()
+behavior_agent = BehavioralCoachAgent()
+perf_agent = PerformanceTrackerAgent()
+
+# Endpoints
+@app.post("/analyze/resume")
+async def analyze_resume(request: ResumeRequest):
+    try:
+        analysis = resume_agent.analyze(request.text)
+        return {
+            "skills": analysis["skills"],
+            "role_match": analysis["role_match"],
+            "suggested_questions": analysis["suggested_questions"],
+            "strengths": analysis["strengths"],
+            "weaknesses": analysis["weaknesses"]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/analyze/interview")
+async def analyze_interview(request: InterviewRequest):
+    try:
+        evaluation = interview_agent.evaluate(request.responses)
+        return {
+            "feedback": evaluation["feedback"],
+            "scores": evaluation["scores"],
+            "improvement_areas": evaluation["improvement_areas"]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/analyze/code")
+async def analyze_code(request: CodeRequest):
+    try:
+        evaluation = dsa_agent.evaluate(request.code, request.problem)
+        return {
+            "correctness": evaluation["correctness"],
+            "time_complexity": evaluation["time_complexity"],
+            "space_complexity": evaluation["space_complexity"],
+            "style": evaluation["style"],
+            "suggestions": evaluation["suggestions"]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/performance/{user_id}")
+async def get_performance(user_id: str):
+    try:
+        report = perf_agent.generate_report(user_id)
+        return {
+            "progress": report["progress"],
+            "weak_areas": report["weak_areas"],
+            "strengths": report["strengths"],
+            "suggestions": report["suggestions"]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Combined analysis endpoint (legacy support)
 @app.post("/analyze")
-async def analyze(request: Request):
-    data = await request.json()
-    resume = data.get("resume", "")
-    user_answers = data.get("user_answers", [])
-    code_solution = data.get("code_solution", "")
-    session_id = str(uuid.uuid4())
-
-    # Step 1: Resume Analysis
-    resume_agent = ResumeAnalyzerAgent()
-    resume_feedback = resume_agent.analyze_resume(resume)
-
-    # Step 2: Mock Interview
-    interviewer_agent = MockInterviewerAgent()
-    interview_results = interviewer_agent.conduct_interview(user_answers)
-
-    # Step 3: DSA Evaluation
-    dsa_agent = DSAEvaluatorAgent()
-    dsa_results = dsa_agent.evaluate_code(code_solution)
-
-    # Step 4: Behavioral Q&A
-    behavioral_agent = BehavioralCoachAgent()
-    behavioral_results = behavioral_agent.evaluate_behavioral(user_answers)
-
-    # Step 5: Performance Tracking
-    performance_agent = PerformanceTrackerAgent()
-    final_report = performance_agent.generate_report(
-        resume_feedback, interview_results, dsa_results, behavioral_results
-    )
-
-    # Save session
-    session_data = {
-        "session_id": session_id,
-        "resume": resume,
-        "user_answers": user_answers,
-        "code_solution": code_solution,
-        "resume_feedback": resume_feedback,
-        "interview_results": interview_results,
-        "dsa_results": dsa_results,
-        "behavioral_results": behavioral_results,
-        "final_report": final_report
-    }
-    save_session(session_data)
-
-    return {
-        "session_id": session_id,
-        "resume_feedback": resume_feedback,
-        "interview_results": interview_results,
-        "dsa_results": dsa_results,
-        "behavioral_results": behavioral_results,
-        "final_report": final_report
-    }
-
-@app.get("/session/{session_id}")
-async def get_session_data(session_id: str):
-    session = get_session(session_id)
-    if not session:
-        return {"error": "Session not found"}
-    return session
-
+async def analyze_combined(resume: str = Body(...), 
+                         answers: List[str] = Body(...),
+                         code: str = Body(...)):
+    try:
+        session_id = str(uuid.uuid4())
+        
+        # Run all analyses
+        resume_analysis = resume_agent.analyze(resume)
+        interview_eval = interview_agent.evaluate(answers)
+        code_eval = dsa_agent.evaluate(code)
+        behavior_analysis = behavior_agent.analyze(answers)
+        
+        # Generate performance report
+        performance = perf_agent.generate_combined_report(
+            resume_analysis, 
+            interview_eval,
+            code_eval,
+            behavior_analysis
+        )
+        
+        # Save session (implement your database logic here)
+        session_data = {
+            "session_id": session_id,
+            "timestamp": datetime.utcnow().isoformat(),
+            "resume_analysis": resume_analysis,
+            "interview_evaluation": interview_eval,
+            "code_evaluation": code_eval,
+            "performance": performance
+        }
+        # save_to_database(session_data)
+        
+        return {
+            "session_id": session_id,
+            "resume": resume_analysis,
+            "interview": interview_eval,
+            "code": code_eval,
+            "behavior": behavior_analysis,
+            "performance": performance
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.getenv("PORT", 8000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

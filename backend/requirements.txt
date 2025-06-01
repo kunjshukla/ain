@@ -1,28 +1,21 @@
-# Core
-fastapi==0.95.2
+# Core API
+fastapi[all]==0.95.2
 uvicorn[standard]==0.22.0
+python-multipart==0.0.6
 python-dotenv==1.0.0
 
-# AI/ML
-pyautogen==0.2.0  # Version compatible with flaml 1.1.1
-langchain==0.0.230
-langchain-google-genai==0.0.4
-google-cloud-aiplatform==1.26.1
+# Multi-Agent Core
+pyautogen==0.2.0  # This is the correct package name for autogen 0.2.2
+crewai==0.1.10
 
-# Database
-SQLAlchemy==1.4.50
+# NLP Processing
+spacy==3.7.2
+https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.7.0/en_core_web_lg-3.7.0-py3-none-any.whl
 
-# Utils
-pydantic>=1.10.7,<2.0.0
-typing-extensions>=4.5.0
+# Data Processing
+pandas==2.0.3
+numpy==1.24.3
 
-# Additional dependencies that might be needed
-aiohttp==3.9.3
-async-timeout==4.0.3
-dataclasses-json==0.5.14
-numpy>=1.24.0
-requests>=2.31.0
-tenacity>=8.2.3
-
-# FLAML with specific version compatible with autogen
-flaml[automl]==1.1.1
+# Utilities
+pydantic==1.10.7
+requests==2.31.0

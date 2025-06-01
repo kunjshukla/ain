@@ -1,36 +1,94 @@
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.prompts import PromptTemplate
-from utils.prompts.dsa_prompts import DSA_EVALUATION_PROMPT
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-google_api_key = os.getenv("GOOGLE_API_KEY")
+# agents/dsa_evaluator.py
+import ast
+import astunparse
+from typing import Dict, Any, Tuple
+import re
 
 class DSAEvaluatorAgent:
     def __init__(self):
-        self.prompt = PromptTemplate(
-            input_variables=["code_solution"],
-            template=DSA_EVALUATION_PROMPT
-        )
+        self.problems = {
+            "reverse_string": {
+                "input_types": [str],
+                "output_type": str,
+                "test_cases": [
+                    ("hello", "olleh"),
+                    ("", ""),
+                    ("a", "a"),
+                    ("abc123", "321cba")
+                ]
+            },
+            # Add more problems as needed
+        }
         
-        if not google_api_key:
-            print("Warning: GOOGLE_API_KEY not found. Mock evaluations will be used.")
-            self.llm = None
-        else:
-            self.llm = ChatGoogleGenerativeAI(
-                model="gemini-1.5-pro",
-                temperature=0.7,
-                google_api_key=google_api_key
-            )
-
-    def evaluate_code(self, code_solution):
-        if not code_solution:
-            return "- Correctness: [No]\n- Feedback: [No code provided]\n- Score: [0]"
+    def evaluate(self, code: str, problem_id: str = "reverse_string") -> Dict[str, Any]:
+        if problem_id not in self.problems:
+            raise ValueError(f"Unknown problem: {problem_id}")
             
-        if not self.llm:
-            return "- Correctness: [Yes]\n- Feedback: [Sample feedback - please provide API key for real evaluation]\n- Score: [8/10]"
+        problem = self.problems[problem_id]
+        
+        try:
+            # Parse and analyze the code
+            tree = ast.parse(code)
             
-        formatted_prompt = self.prompt.format(code_solution=code_solution)
-        response = self.llm.invoke(formatted_prompt)
-        return response.content
+            # Check for syntax errors
+            try:
+                ast.parse(code)
+            except SyntaxError as e:
+                return {
+                    "correctness": 0,
+                    "error": f"Syntax error: {str(e)}",
+                    "time_complexity": "N/A",
+                    "space_complexity": "N/A",
+                    "style": 0,
+                    "suggestions": ["Fix syntax errors in your code"]
+                }
+            
+            # Run test cases
+            test_results = self._run_test_cases(code, problem["test_cases"])
+            correctness = sum(1 for r in test_results if r["passed"]) / len(test_results)
+            
+            # Analyze complexity
+            time_complexity = self._analyze_time_complexity(tree)
+            space_complexity = self._analyze_space_complexity(tree)
+            
+            # Check style
+            style_score = self._check_code_style(code)
+            
+            return {
+                "correctness": correctness,
+                "test_results": test_results,
+                "time_complexity": time_complexity,
+                "space_complexity": space_complexity,
+                "style": style_score,
+                "suggestions": self._generate_suggestions(
+                    correctness, 
+                    time_complexity,
+                    style_score
+                )
+            }
+            
+        except Exception as e:
+            return {
+                "correctness": 0,
+                "error": f"Error during evaluation: {str(e)}",
+                "time_complexity": "N/A",
+                "space_complexity": "N/A",
+                "style": 0,
+                "suggestions": ["An error occurred during code evaluation"]
+            }
+    
+    def _run_test_cases(self, code: str, test_cases: list) -> list:
+        # Implement test case execution
+        pass
+        
+    def _analyze_time_complexity(self, tree: ast.AST) -> str:
+        # Implement time complexity analysis
+        return "O(n)"
+        
+    def _analyze_space_complexity(self, tree: ast.AST) -> str:
+        # Implement space complexity analysis
+        return "O(1)"
+        
+    def _check_code_style(self, code: str) -> float:
+        # Implement style checking
+        return 0.9
