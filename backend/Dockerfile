@@ -11,12 +11,16 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+
+# Copy and install requirements first for caching
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application
 COPY . .
 
-# Ensure line endings are correct and make executable
+# Fix line endings and make executable
 RUN sed -i 's/\r$//' start.sh && chmod +x start.sh
 
-# Use the start script
+# Run directly without shell interpretation
 CMD ["./start.sh"]
