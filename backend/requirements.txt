@@ -1,21 +1,34 @@
 # Core API
-fastapi[all]==0.95.2
-uvicorn[standard]==0.22.0
+fastapi==0.95.0
+uvicorn==0.21.1
+pydantic<2.0.0,>=1.10.0  # Fixed version for compatibility
 python-multipart==0.0.6
 python-dotenv==1.0.0
 
-# Multi-Agent Core
-pyautogen==0.2.0  # This is the correct package name for autogen 0.2.2
-crewai==0.1.10
+# PDF Processing
+pypdf2==3.0.1
+
+# Video interview dependencies removed
+
+# Utilities
+requests==2.31.0
+astunparse>=1.6.3  # Required for DSA evaluator
 
 # NLP Processing
 spacy==3.7.2
-https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.7.0/en_core_web_lg-3.7.0-py3-none-any.whl
+# Note: spaCy models are installed in the Dockerfile
+# The large model is optional and will be used if available
 
 # Data Processing
 pandas==2.0.3
 numpy==1.24.3
 
-# Utilities
-pydantic==1.10.7
-requests==2.31.0
+# LLM Integration
+langchain>=0.0.200,<0.1.0
+langchain-google-genai>=0.0.5,<0.1.0
+google-generativeai>=0.3.0,<0.4.0
+python-dateutil>=2.8.2,<3.0.0
+
+# Multi-Agent Core - Optional, will be mocked if not available
+# pyautogen and crewai are commented out due to dependency conflicts
+# The system will use fallback implementations

@@ -54,12 +54,7 @@ except ImportError as e:
     print(f"Warning: PerformanceTrackerAgent not available: {e}")
     performance_tracker_available = False
 
-try:
-    from agents.video_interview_agent import VideoInterviewAgent
-    video_agent_available = True
-except ImportError as e:
-    print(f"Warning: VideoInterviewAgent not available: {e}")
-    video_agent_available = False
+# Video integration removed
 
 try:
     from database import save_session, get_session, track_user_session, get_user_performance
@@ -103,15 +98,6 @@ class SessionRequest(BaseModel):
     user_id: str
     session_data: Dict[str, Any]
     
-class VideoInterviewRequest(BaseModel):
-    video_data: str  # Base64 encoded video data
-    question: str
-    user_id: Optional[str] = None
-    
-class VideoQuestionsRequest(BaseModel):
-    category: Optional[str] = None
-    count: int = 3
-
 # Initialize agents with fallback mechanisms
 resume_agent = None
 if resume_agent_available:
@@ -158,14 +144,7 @@ if performance_tracker_available:
         print(f"Error initializing PerformanceTrackerAgent: {e}")
         performance_tracker_available = False
 
-video_agent = None
-if video_agent_available:
-    try:
-        video_agent = VideoInterviewAgent()
-        print("VideoInterviewAgent initialized successfully")
-    except Exception as e:
-        print(f"Error initializing VideoInterviewAgent: {e}")
-        video_agent_available = False
+# Video agent initialization removed
 
 # Endpoints
 @app.post("/analyze/resume")
@@ -648,129 +627,9 @@ def track_session(request: SessionRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/analyze/video-interview")
-async def analyze_video_interview(request: VideoInterviewRequest):
-    try:
-        # Check if video agent is available
-        if not video_agent_available or video_agent is None:
-            # Fallback response with simulated data
-            return {
-                "evaluation": {
-                    "overall_score": 7.5,
-                    "confidence": 6.8,
-                    "clarity": 8.0,
-                    "engagement": 7.2,
-                    "feedback": "Good presentation with clear communication. Consider maintaining more eye contact and varying your tone for better engagement."
-                },
-                "transcript": "This is a simulated transcript as video processing is not available in this deployment.",
-                "fallback": True
-            }
-        
-        try:
-            # Decode base64 video data
-            video_data = base64.b64decode(request.video_data)
-            
-            # Process the video
-            analysis = video_agent.process_video(video_data)
-            analysis["fallback"] = False
-            
-            # Track the session if user_id is provided and performance tracker is available
-            if request.user_id and performance_tracker_available and performance_tracker is not None:
-                session_data = {
-                    "session_type": "video_interview",
-                    "question": request.question,
-                    "overall_score": analysis["evaluation"]["overall_score"],
-                    "timestamp": time.time()
-                }
-                try:
-                    performance_tracker.track_session(request.user_id, session_data)
-                except Exception as e:
-                    print(f"Error tracking video interview session: {e}")
-            
-            return analysis
-        except Exception as e:
-            print(f"Error processing video: {e}")
-            # Fallback response if video processing fails
-            return {
-                "evaluation": {
-                    "overall_score": 6.0,
-                    "confidence": 6.0,
-                    "clarity": 6.0,
-                    "engagement": 6.0,
-                    "feedback": "Unable to fully analyze video. Consider checking your video format or trying again."
-                },
-                "transcript": "Unable to process video for transcription.",
-                "error": str(e),
-                "fallback": True
-            }
-    except Exception as e:
-        print(f"Error in analyze_video_interview: {e}")
-        # Complete fallback response
-        return {
-            "evaluation": {
-                "overall_score": 5.0,
-                "confidence": 5.0,
-                "clarity": 5.0,
-                "engagement": 5.0,
-                "feedback": "System error occurred. Unable to process video interview."
-            },
-            "transcript": "Transcript unavailable due to system error.",
-            "error": str(e),
-            "fallback": True
-        }
+# Video interview endpoint removed
 
-@app.post("/video-interview/questions")
-def get_video_interview_questions(request: VideoQuestionsRequest):
-    try:
-        # Check if video agent is available
-        if not video_agent_available or video_agent is None:
-            # Fallback with predefined questions
-            fallback_questions = [
-                "Tell me about yourself and your background.",
-                "What are your greatest strengths as a professional?",
-                "Describe a challenging project you worked on and how you handled it.",
-                "Why are you interested in this position?",
-                "Where do you see yourself in five years?"
-            ]
-            # Return subset based on count
-            count = min(request.count, len(fallback_questions))
-            return {
-                "questions": fallback_questions[:count],
-                "fallback": True
-            }
-        
-        # If agent is available, use it
-        try:
-            questions = video_agent.get_interview_questions(
-                category=request.category,
-                count=request.count
-            )
-            return {
-                "questions": questions,
-                "fallback": False
-            }
-        except Exception as e:
-            print(f"Error getting interview questions: {e}")
-            # Fallback with basic questions if agent fails
-            basic_questions = [
-                "Tell me about yourself.",
-                "What are your strengths?",
-                "Describe a challenge you've faced."
-            ]
-            count = min(request.count, len(basic_questions))
-            return {
-                "questions": basic_questions[:count],
-                "error": str(e),
-                "fallback": True
-            }
-    except Exception as e:
-        print(f"Error in get_video_interview_questions: {e}")
-        # Complete fallback
-        return {
-            "questions": ["Tell me about yourself."],
-            "error": str(e),
-            "fallback": True
-        }
+# Video interview questions endpoint removed
 
 if __name__ == "__main__":
     import uvicorn
