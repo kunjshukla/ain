@@ -556,20 +556,7 @@ with tab4:
     
     code_solution = st.text_area("Your solution (Python):", height=150, key="combined_code")
     
-    st.subheader("Video Interview")
-    st.write("Upload a video of yourself answering an interview question for comprehensive feedback.")
-    video_question = st.selectbox(
-        "Select a video interview question",
-        [
-            "Describe a challenging situation you faced at work and how you handled it.",
-            "Give an example of a time you showed leadership skills.",
-            "How do you handle stress and pressure?",
-            "Explain your approach to problem-solving in your technical work."
-        ],
-        key="combined_video_question"
-    )
-    
-    uploaded_video = st.file_uploader("Upload your video response (MP4 format)", type=["mp4"], key="combined_video")
+    # Video interview section removed
     
     if st.button("Run Combined Analysis"):
         if not resume_text.strip() or not interview_response.strip() or not code_solution.strip():
@@ -588,30 +575,7 @@ with tab4:
                 response = requests.post(f"{BACKEND_URL}/analyze/combined", json=payload)
                 result = response.json()
                 
-                # Process video interview if provided
-                video_analysis = None
-                if uploaded_video is not None:
-                    st.info("Processing video interview...")
-                    # Read video file
-                    video_bytes = uploaded_video.read()
-                    
-                    # Convert to base64
-                    import base64
-                    video_b64 = base64.b64encode(video_bytes).decode()
-                    
-                    # Send to backend
-                    video_payload = {
-                        "video_data": video_b64,
-                        "question": video_question,
-                        "user_id": user_id
-                    }
-                    
-                    # This would be the actual API call in a complete implementation
-                    # video_response = requests.post(f"{BACKEND_URL}/analyze/video-interview", json=video_payload)
-                    # video_analysis = video_response.json()
-                    
-                    # For demonstration, show a simulated response
-                    # Video analysis removed
+                # Video interview processing section removed
                 
                 st.success("✅ Combined Analysis Complete")
                 
