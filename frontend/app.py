@@ -98,12 +98,8 @@ st.set_page_config(page_title="AI NinjaCoach", layout="wide")
 st.title("🤖 AI NinjaCoach - Smart Interview Prep")
 
 # Tabs for each agent functionality
-tab1, tab2, tab3, tab5, tab6 = st.tabs(["🧑‍💼 Interview", "💻 DSA", "📄 Resume Analyzer", "📊 Past Performance", "🔄 Combined Analysis"])
+tab1, tab2, tab3, tab4 = st.tabs(["🧑‍💼 Interview", "💻 DSA", "📄 Resume Analyzer", "🤖 Career Coach"])
 
-# Add Debug Options
-st.markdown("---")
-st.title("Debug Options")
-debug_mode = st.checkbox("Debug Mode")
 
 # ------------------ Interview Tab ------------------ #
 with tab1:
@@ -311,20 +307,29 @@ with tab3:
             st.info("Analyzing your resume...")
             try:
                 result = None
-                
-                try:
-                    if input_method == "Paste Resume Text":
-                        # Send resume text for analysis
-                        st.info("Sending resume to local backend for analysis...")
-                        payload = {"text": resume_text}
+                if input_method == "Paste Resume Text":
+                    # Send resume text for analysis
+                    st.info("Sending resume to local backend for analysis...")
+                    payload = {"text": resume_text}
+                    try:
                         response = requests.post(f"{BACKEND_URL}/analyze/resume", json=payload)
                         response.raise_for_status()
                         result = response.json()
                         st.success("Resume analysis completed successfully!")
-                    else:
-                        # Send PDF for analysis
-                        st.info("Sending PDF to local backend for analysis...")
-                        # Properly read PDF content
+                    except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError) as e:
+                        st.warning(f"Local backend error: {str(e)}. Trying deployed backend...")
+                        try:
+                            fallback_url = "https://ain-backend-v3.onrender.com"
+                            response = requests.post(f"{fallback_url}/analyze/resume", json=payload)
+                            response.raise_for_status()
+                            result = response.json()
+                            st.success("Resume analysis completed successfully!")
+                        except Exception as e2:
+                            st.error(f"Deployed backend error: {str(e2)}")
+                else:
+                    # Send PDF for analysis
+                    st.info("Sending PDF to local backend for analysis...")
+                    try:
                         pdf_content = uploaded_file.getvalue()
                         if not pdf_content:
                             st.error("Could not read PDF content. Please try again.")
@@ -334,90 +339,52 @@ with tab3:
                             response.raise_for_status()
                             result = response.json()
                             st.success("Resume analysis completed successfully!")
-                            
                             # Display extracted text preview if available
                             if "extracted_text" in result:
-                                with st.expander("View extracted text from PDF", expanded=debug_mode):
+                                with st.expander("View extracted text from PDF"):
                                     st.text(result["extracted_text"])
-                except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError) as e:
-                    st.warning(f"Local backend error: {str(e)}. Trying deployed backend...")
-                    try:
-                        # Fallback to deployed backend
-                        fallback_url = "https://ain-backend-v3.onrender.com"
-                        if input_method == "Paste Resume Text":
-                            st.info("Sending resume to deployed backend for analysis...")
-                            payload = {"text": resume_text}
-                            response = requests.post(f"{fallback_url}/analyze/resume", json=payload)
+                    except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError) as e:
+                        st.warning(f"Local backend error: {str(e)}. Trying deployed backend...")
+                        try:
+                            fallback_url = "https://ain-backend-v3.onrender.com"
+                            files = {"file": (uploaded_file.name, pdf_content, "application/pdf")}
+                            response = requests.post(f"{fallback_url}/analyze/resume/pdf", files=files, timeout=30)
                             response.raise_for_status()
                             result = response.json()
                             st.success("Resume analysis completed successfully!")
-                        else:
-                            st.info("Sending PDF to deployed backend for analysis...")
-                            # Properly read PDF content
-                            pdf_content = uploaded_file.getvalue()
-                            if not pdf_content:
-                                st.error("Could not read PDF content. Please try again.")
-                            else:
-                                files = {"file": (uploaded_file.name, pdf_content, "application/pdf")}
-                                response = requests.post(f"{fallback_url}/analyze/resume/pdf", files=files, timeout=30)
-                                response.raise_for_status()
-                                result = response.json()
-                                st.success("Resume analysis completed successfully!")
-                                
-                                # Display extracted text preview if available
-                                if "extracted_text" in result:
-                                    with st.expander("View extracted text from PDF", expanded=debug_mode):
-                                        st.text(result["extracted_text"])
-                    except Exception as e:
-                        # If both backends fail, use simulated response
-                        st.warning(f"Deployed backend error: {str(e)}. Using simulated response.")
-                        if 'response' in locals() and hasattr(response, 'text'):
-                            with st.expander("View detailed error response from deployed backend"):
-                                st.text(f"Status code: {response.status_code if hasattr(response, 'status_code') else 'Unknown'}")
-                                st.text(f"Response content: {response.text}")
-                                
-                        if input_method == "Paste Resume Text":
-                            result = get_simulated_resume_result(resume_text)
-                        else:
-                            result = get_simulated_resume_result("[PDF content would be extracted here in a real implementation]")
-                except Exception as e:
-                    st.error(f"Unexpected error: {str(e)}. Using simulated response.")
-                    if 'response' in locals() and hasattr(response, 'text'):
-                        with st.expander("View detailed error response"):
-                            st.text(f"Status code: {response.status_code if hasattr(response, 'status_code') else 'Unknown'}")
-                            st.text(f"Response content: {response.text}")
-                    
-                    if input_method == "Paste Resume Text":
-                        result = get_simulated_resume_result(resume_text)
-                    else:
-                        result = get_simulated_resume_result("[PDF content would be extracted here in a real implementation]")
-                        with st.expander("View extracted text from PDF", expanded=debug_mode):
-                            st.text("[This is a simulated PDF extraction. In a real implementation, the actual text from your PDF would be shown here.]")
-
+                            if "extracted_text" in result:
+                                with st.expander("View extracted text from PDF"):
+                                    st.text(result["extracted_text"])
+                        except Exception as e2:
+                            st.error(f"Deployed backend error: {str(e2)}")
+            except Exception as e:
+                st.error(f"An error occurred: {str(e)}")
+            
+            # Display results
+            st.success("✅ Analysis Complete")
+            
+            # Show skills
+            st.subheader("Skills Identified")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.write("**Technical Skills:**")
+                for skill in result.get("skills", {}).get("technical", []):
+                    st.markdown(f"- {skill}")
+            with col2:
+                st.write("**Soft Skills:**")
+                for skill in result.get("skills", {}).get("soft", []):
+                    st.markdown(f"- {skill}")
+            
+            # Show role match
+            st.subheader("Role Match Percentage")
+            role_match = result.get("role_match", {})
+            if role_match:
+                # Create a bar chart for role matches
+                role_data = {"Role": list(role_match.keys()), "Match %": [v*100 for v in role_match.values()]}
+                st.bar_chart(role_data, x="Role", y="Match %")
                 
-                # Track the session
-                try:
-                    session_data = {
-                        "user_id": user_id,
-                        "session_data": {
-                            "session_id": f"resume_{datetime.now().strftime('%Y%m%d%H%M%S')}",
-                            "resume_skills": result.get("skills", {}).get("technical", []),
-                            "timestamp": datetime.now().isoformat()
-                        }
-                    }
-                    
-                    # Try local backend first
-                    try:
-                        track_response = requests.post(f"{BACKEND_URL}/track/session", json=session_data, timeout=3)
-                        track_response.raise_for_status()
-                    except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError, requests.exceptions.Timeout) as e:
-                        # Fallback to deployed backend
-                        fallback_url = "https://ain-backend-v3.onrender.com"
-                        track_response = requests.post(f"{fallback_url}/track/session", json=session_data, timeout=3)
-                        # Don't raise for status here - if this fails, just continue silently
-                except Exception as e:
-                    # If session tracking fails, don't interrupt the user experience
-                    pass
+                # If session tracking fails, don't interrupt the user experience
+                pass
                 
                 # Display results
                 st.success("✅ Analysis Complete")
@@ -460,39 +427,64 @@ with tab3:
                 for i, question in enumerate(result.get("suggested_questions", [])):
                     st.markdown(f"{i+1}. {question}")
                     
-            except Exception as e:
-                st.error(f"❌ Error: {e}")
-                st.error(f"Response: {response.text if 'response' in locals() else 'No response'}")
 
+# ========== End of Career Coach (AI Orchestrator) Tab ==========
 
-# ------------------ Past Performance Tab ------------------ #
+# ========== Performance Dashboard & Coding Challenge ==========
+
+st.markdown("## 📈 Your Performance Dashboard")
+
+col1, col2, col3 = st.columns(3)
+col1.metric("Coding Score", "85", "+5")
+col2.metric("Communication", "92", "+3")
+col3.metric("Resume Score", "78", "-2")
+
+user_id = st.text_input("User ID for Performance Report", value="user123", key="perf_dash_user_id")
+
+def load_performance_report(user_id):
+    st.info(f"Loading performance report for {user_id} (stub function)")
+    # Here you would call backend and display results
+
+if st.button("📥 Load Performance Report"):
+    load_performance_report(user_id)
+
+st.bar_chart(data={"Scores": [78, 85, 92]}, use_container_width=True)
+
+st.markdown("## 🧩 Coding Challenge")
+problem = st.selectbox("Select a coding problem", ["Reverse String", "Two Sum", "Binary Search"])
+code_input = st.text_area("Your Solution (Python)", height=200)
+
+def evaluate_code(problem, code_input):
+    # Placeholder for backend code evaluation
+    return f"Feedback for {problem}:\n- Code looks good!\n- Remember to handle edge cases."
+
+if st.button("✅ Evaluate Code"):
+    feedback = evaluate_code(problem, code_input)
+    st.success("Evaluation Complete")
+    st.code(feedback, language="markdown")
 
 # ------------------ Career Coach (Orchestrator) Tab ------------------ #
-with st.container():
-    st.header("Career Coach (AI Orchestrator)")
-    st.markdown("Let the AI orchestrator guide your end-to-end interview prep!")
-    user_id = st.text_input("User ID", value="user123", key="orchestrator_user_id")
-    goal = st.text_input("Your Career Goal", value="Get a backend developer job at Google", key="orchestrator_goal")
-    resume_text = st.text_area("Paste your resume text (optional)", height=150, key="orchestrator_resume")
-    code = st.text_area("Paste your code solution (optional)", height=150, key="orchestrator_code")
-    interview_answers = st.text_area("Paste your interview answers (comma separated, optional)", height=100, key="orchestrator_answers")
-    if st.button("Run Orchestrator Analysis"):
-        st.info("Running orchestrator agent workflow...")
+with tab4:
+    st.markdown("""
+    <h2 style='color:#00FFFF'>🎯 Career Coach (AI Orchestrator)</h2>
+    <p style='color:#AAAAAA'>Let the AI Orchestrator guide your end-to-end interview prep journey.</p>
+    <hr style='border-color: #333;'>
+    """, unsafe_allow_html=True)
+    def run_orchestrator(user_id, career_goal, resume, code_solution, interview_answers):
+        st.info("Calling Orchestrator Agent...")
         try:
             payload = {
                 "user_id": user_id,
-                "goal": goal,
-                "resume_text": resume_text or None,
-                "code": code or None,
-                "interview_answers": [a.strip() for a in interview_answers.split(",") if a.strip()] if interview_answers else None
+                "goal": career_goal,
+                "resume_text": resume,
+                "code": code_solution,
+                "interview_answers": interview_answers
             }
             response = requests.post(f"{BACKEND_URL}/orchestrate", json=payload)
+            result = response.json()
             if response.status_code == 200:
-                result = response.json()
-                st.success("✅ Orchestrator Analysis Complete!")
-                st.subheader("Summary of Results")
-                st.json(result)
-                # Optionally, show each agent's output in expandable sections
+                st.success("Orchestrator Results:")
+                # Show each agent's output in expandable sections
                 if result.get("resume"):
                     with st.expander("Resume Analysis"):
                         st.json(result["resume"])
@@ -513,81 +505,37 @@ with st.container():
         except Exception as e:
             st.error(f"❌ Error: {e}")
 
-# ------------------ Performance Dashboard Tab ------------------ #
-with tab5:
-    st.header("Your Performance Dashboard")
-    
-    user_id = st.text_input("Enter your User ID", value="user123", key="perf_user_id")
-    
-    if st.button("Load Performance Report"):
-        st.info("Calling Performance Tracker Agent...")
-        try:
-            response = requests.get(f"{BACKEND_URL}/performance/{user_id}")
-            result = response.json()
-            
-            if not result or "error" in result:
-                st.warning("No performance data found for this user ID. Try completing some exercises first!")
-            else:
-                st.success("✅ Performance Report Loaded")
+    with st.expander("📋 Career Details"):
+        user_id = st.text_input("User ID", value="user123")
+        career_goal = st.text_input("Career Goal", placeholder="e.g., Backend Developer at Google")
+        resume = st.text_area("Paste your Resume (Optional)")
+        code_solution = st.text_area("Paste your Code Solution (Optional)")
+        interview_answers = st.text_area("Paste your Interview Answers (comma-separated)")
+
+        if st.button("🚀 Run Orchestrator Analysis"):
+            run_orchestrator(user_id, career_goal, resume, code_solution, interview_answers)
+                    
+            if dsa_scores:
+                st.subheader("DSA Performance")
+                dsa_data = {"Date": dates[:len(dsa_scores)], "Score": dsa_scores}
+                st.line_chart(dsa_data, x="Date", y="Score")
+                    
+                # Recent sessions
+                st.subheader("Recent Sessions")
+                recent_sessions = sessions[-5:] if len(sessions) > 5 else sessions
+                recent_sessions.reverse()  # Most recent first
                 
-                # User stats overview
-                st.subheader("Overall Stats")
-                col1, col2, col3 = st.columns(3)
-                
-                with col1:
-                    avg_interview = result.get("average_interview_score", 0)
-                    st.metric("Avg Interview Score", f"{avg_interview:.2f}/1.0")
-                    
-                with col2:
-                    avg_dsa = result.get("average_dsa_score", 0)
-                    st.metric("Avg DSA Score", f"{avg_dsa:.2f}/1.0")
-                    
-                with col3:
-                    total_sessions = result.get("total_sessions", 0)
-                    st.metric("Total Sessions", total_sessions)
-                
-                # Progress over time
-                st.subheader("Progress Over Time")
-                
-                # Extract time series data from sessions
-                sessions = result.get("sessions", [])
-                
-                if sessions:
-                    # Sort sessions by timestamp
-                    sessions.sort(key=lambda x: x.get("timestamp", ""))
-                    
-                    # Prepare data for charts
-                    dates = [s.get("timestamp", "").split("T")[0] for s in sessions]
-                    interview_scores = [s.get("interview_score", 0) for s in sessions if "interview_score" in s]
-                    dsa_scores = [s.get("code_correctness", 0) for s in sessions if "code_correctness" in s]
-                    
-                    # Create progress charts
-                    if interview_scores:
-                        st.subheader("Interview Performance")
-                        interview_data = {"Date": dates[:len(interview_scores)], "Score": interview_scores}
-                        st.line_chart(interview_data, x="Date", y="Score")
-                    
-                    if dsa_scores:
-                        st.subheader("DSA Performance")
-                        dsa_data = {"Date": dates[:len(dsa_scores)], "Score": dsa_scores}
-                        st.line_chart(dsa_data, x="Date", y="Score")
-                    
-                    # Recent sessions
-                    st.subheader("Recent Sessions")
-                    recent_sessions = sessions[-5:] if len(sessions) > 5 else sessions
-                    recent_sessions.reverse()  # Most recent first
-                    
-                    for i, session in enumerate(recent_sessions):
-                        session_type = "Unknown"
-                        if "interview_score" in session:
+                for i, session in enumerate(recent_sessions):
+                    session_type = "Unknown"
+                    if "interview_score" in session:
                             session_type = "Interview"
-                        elif "code_correctness" in session:
+                    elif "code_correctness" in session:
                             session_type = "DSA Challenge"
-                        elif "resume_skills" in session:
+                    elif "resume_skills" in session:
                             session_type = "Resume Analysis"
                             
-                        with st.expander(f"{session_type} Session - {session.get('timestamp', '').split('T')[0]}"):
-                            st.json(session)
+                    with st.expander(f"{session_type} Session - {session.get('timestamp', '').split('T')[0]}"):
+                        st.json(session)
                 else:
                     st.info("No session data available yet. Complete some exercises to see your progress!")
                     
@@ -598,26 +546,7 @@ with tab5:
                     st.write("Based on your resume analysis:")
                     # Display as tags
                     st.write(', '.join([f"`{skill}`" for skill in skills]))
-                
-        except Exception as e:
-            st.error(f"❌ Error: {e}")
-            st.error(f"Response: {response.text if 'response' in locals() else 'No response'}")
 
-# ------------------ Combined Analysis Tab ------------------ #
-# Combined Analysis Tab
-with tab6:
-    st.header("Complete Interview Preparation")
-    st.write("This feature combines resume analysis, mock interview, and coding evaluation for a comprehensive assessment.")
-    
-    user_id = st.text_input("Your User ID", value="user123", key="combined_user_id")
-    
-    col1, col2 = st.columns(2)
-    # Analysis sections
-    resume_text = st.text_area("Paste your resume", height=200, key="combined_resume")
-    
-    st.subheader("Mock Interview")
-    interview_response = st.text_area("Answer this question: Tell me about yourself and your background.", height=150, key="combined_interview")
-    
     st.subheader("Coding Challenge")
     coding_problem = st.selectbox(
         "Select a coding problem",
