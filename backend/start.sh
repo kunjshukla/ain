@@ -1,7 +1,14 @@
-#!/bin/sh
-# Debug: Print the PORT value
-echo "PORT is set to: $PORT"
-# Use a default port if $PORT is not set
-PORT=${PORT:-8000}
-echo "Using PORT: $PORT"
-exec uvicorn main:app --host 0.0.0.0 --port $PORT
+#!/bin/bash
+
+# Set default port if not specified
+export PORT=${PORT:-8000}
+
+# Ensure PORT is an integer
+if ! [[ "$PORT" =~ ^[0-9]+$ ]]; then
+    echo "Error: PORT must be a number" >&2
+    exit 1
+fi
+
+# Start the application
+echo "Starting application on port $PORT"
+uvicorn main:app --host 0.0.0.0 --port $PORT

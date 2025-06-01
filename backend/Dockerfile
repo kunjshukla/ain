@@ -30,4 +30,5 @@ EXPOSE 8000
 ENV PORT=8000
 
 # Use shell form to ensure environment variable substitution
+RUN chmod +x start.sh
 CMD ["./start.sh"]
