@@ -110,12 +110,34 @@ class ResumeAnalyzerAgent:
     def _match_roles(self, text: str) -> Dict[str, float]:
         """Match resume to potential roles based on skills"""
         roles = {
-            "software_engineer": ["python", "java", "javascript", "c++", "software development", "algorithms"],
-            "data_scientist": ["python", "r", "machine learning", "statistics", "data analysis", "pandas"],
-            "web_developer": ["javascript", "html", "css", "react", "node", "angular", "vue"],
-            "devops_engineer": ["docker", "kubernetes", "aws", "ci/cd", "jenkins", "terraform"],
-            "product_manager": ["product management", "agile", "scrum", "user research", "roadmap"]
-        }
+    "software_engineer": [
+        "python", "java", "javascript", "c++", "c#", "software development",
+        "system design", "object-oriented programming", "data structures", "algorithms",
+        "git", "debugging", "unit testing", "api development", "design patterns"
+    ],
+    "data_scientist": [
+        "python", "r", "machine learning", "deep learning", "statistics",
+        "data analysis", "pandas", "numpy", "scikit-learn", "tensorflow", "pytorch",
+        "data visualization", "matplotlib", "seaborn", "sql", "feature engineering",
+        "model evaluation", "notebooks", "eda"
+    ],
+    "web_developer": [
+        "html", "css", "javascript", "react", "node.js", "express.js", "vue.js",
+        "angular", "typescript", "responsive design", "restful apis",
+        "frontend", "backend", "fullstack", "webpack", "tailwind", "bootstrap", "redux"
+    ],
+    "devops_engineer": [
+        "docker", "kubernetes", "aws", "gcp", "azure", "ci/cd", "jenkins",
+        "terraform", "ansible", "prometheus", "grafana", "linux", "bash scripting",
+        "infrastructure as code", "monitoring", "logging", "load balancing"
+    ],
+    "product_manager": [
+        "product management", "agile", "scrum", "kanban", "user research", "product roadmap",
+        "market analysis", "stakeholder communication", "user stories", "wireframing",
+        "mvp definition", "feature prioritization", "data-driven decision making", "a/b testing"
+    ]
+}
+
         
         # Extract skills from text
         skills = self._extract_skills(text)

@@ -84,24 +84,9 @@ app.add_middleware(
 )
 
 # Health check endpoint for Render deployment
-@app.get("/health", status_code=status.HTTP_200_OK)
+@app.get("/health")
 async def health_check():
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content={
-            "status": "healthy",
-            "timestamp": datetime.now().isoformat(),
-            "version": "1.0.0",
-            "python_version": platform.python_version(),
-            "agents": {
-                "resume_analyzer": resume_agent_available,
-                "mock_interviewer": interview_agent_available,
-                "dsa_evaluator": dsa_agent_available,
-                "behavioral_coach": behavioral_coach_available,
-                "performance_tracker": performance_tracker_available
-            }
-        }
-    )
+    return {"status": "ok"}
 
 # Pydantic models
 class ResumeRequest(BaseModel):
