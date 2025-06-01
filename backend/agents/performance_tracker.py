@@ -13,26 +13,58 @@ class PerformanceTrackerAgent:
         self.data = self._load_data()
         
     def _load_data(self) -> Dict[str, Any]:
-        """Load performance data from JSON file or initialize new data structure."""
-        if os.path.exists(self.storage_file):
-            try:
-                with open(self.storage_file, 'r') as f:
-                    return json.load(f)
-            except json.JSONDecodeError:
-                # If file is corrupted, start fresh
-                pass
-        return {
+        """Load performance data from JSON file or initialize new data structure with robust error handling."""
+        # Default data structure
+        default_data = {
             "users": {},
             "sessions": [],
             "last_updated": datetime.utcnow().isoformat()
         }
         
+        # If file doesn't exist, return default data
+        if not os.path.exists(self.storage_file):
+            print(f"Performance data file not found at {self.storage_file}. Creating new data structure.")
+            return default_data
+            
+        # Try to load existing data
+        try:
+            with open(self.storage_file, 'r') as f:
+                data = json.load(f)
+                print(f"Successfully loaded performance data with {len(data.get('sessions', []))} sessions")
+                return data
+        except json.JSONDecodeError as e:
+            print(f"Warning: Performance data file is corrupted: {e}. Creating backup and starting fresh.")
+            # Create a backup of the corrupted file
+            try:
+                backup_file = f"{self.storage_file}.backup.{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+                os.rename(self.storage_file, backup_file)
+                print(f"Created backup of corrupted file at {backup_file}")
+            except OSError as e:
+                print(f"Could not create backup of corrupted file: {e}")
+        except Exception as e:
+            print(f"Unexpected error loading performance data: {e}")
+            
+        return default_data
+        
     def _save_data(self):
-        """Save performance data to JSON file."""
-        self.data["last_updated"] = datetime.utcnow().isoformat()
-        os.makedirs(os.path.dirname(self.storage_file), exist_ok=True)
-        with open(self.storage_file, 'w') as f:
-            json.dump(self.data, f, indent=2, default=str)
+        """Save performance data to JSON file with error handling."""
+        try:
+            self.data["last_updated"] = datetime.utcnow().isoformat()
+            # Ensure directory exists
+            try:
+                os.makedirs(os.path.dirname(self.storage_file), exist_ok=True)
+            except OSError as e:
+                print(f"Warning: Could not create directory for performance data: {e}")
+                # Use a fallback location in the current directory if needed
+                self.storage_file = "performance_data.json"
+                
+            # Write the data
+            with open(self.storage_file, 'w') as f:
+                json.dump(self.data, f, indent=2, default=str)
+                
+        except Exception as e:
+            print(f"Error saving performance data: {e}")
+            # Continue execution even if saving fails
             
     def track_session(self, user_id: str, session_data: Dict[str, Any]) -> str:
         """Track a new session and update user performance metrics."""

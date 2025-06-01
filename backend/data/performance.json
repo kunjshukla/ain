@@ -1,1 +1,160 @@
-{"users": {}, "sessions": [], "last_updated": ""}
+{
+  "users": {
+    "user123": {
+      "first_seen": "2025-06-01T08:54:05.140150",
+      "last_seen": "2025-06-01T08:54:05.140150",
+      "sessions": [
+        "session1"
+      ],
+      "metrics": {
+        "interview": {
+          "total_sessions": 1,
+          "average_score": 0.0,
+          "strengths": [],
+          "weaknesses": [],
+          "progress": [
+            {
+              "timestamp": "2025-06-01T08:54:05.140165",
+              "score": 0
+            }
+          ]
+        },
+        "dsa": {
+          "problems_attempted": 1,
+          "problems_solved": 0,
+          "average_complexity": 0.0,
+          "common_patterns": [],
+          "progress": [
+            {
+              "timestamp": "2025-06-01T08:54:05.140165",
+              "correctness": 0,
+              "complexity": "N/A"
+            }
+          ]
+        },
+        "resume": {
+          "skills": [],
+          "last_updated": "2025-06-01T08:54:05.140165",
+          "strengths": [],
+          "weaknesses": []
+        }
+      }
+    },
+    "user_38542cae": {
+      "first_seen": "2025-06-01T08:56:25.062735",
+      "last_seen": "2025-06-01T08:56:25.062735",
+      "sessions": [
+        "38542cae-5732-40dc-9520-969051619ff1"
+      ],
+      "metrics": {
+        "interview": {
+          "total_sessions": 1,
+          "average_score": 0.0,
+          "strengths": [],
+          "weaknesses": [],
+          "progress": [
+            {
+              "timestamp": "2025-06-01T08:56:25.062788",
+              "score": 0
+            }
+          ]
+        },
+        "dsa": {
+          "problems_attempted": 1,
+          "problems_solved": 0,
+          "average_complexity": 0.0,
+          "common_patterns": [],
+          "progress": [
+            {
+              "timestamp": "2025-06-01T08:56:25.062788",
+              "correctness": 0,
+              "complexity": "N/A"
+            }
+          ]
+        },
+        "resume": {
+          "skills": [],
+          "last_updated": "2025-06-01T08:56:25.062788",
+          "strengths": [],
+          "weaknesses": []
+        }
+      }
+    },
+    "test_user": {
+      "first_seen": "2025-06-01T08:56:53.282167",
+      "last_seen": "2025-06-01T08:56:53.282167",
+      "sessions": [
+        "test_session"
+      ],
+      "metrics": {
+        "interview": {
+          "total_sessions": 1,
+          "average_score": 0.0,
+          "strengths": [],
+          "weaknesses": [],
+          "progress": [
+            {
+              "timestamp": "2025-06-01T08:56:53.282179",
+              "score": 0
+            }
+          ]
+        },
+        "dsa": {
+          "problems_attempted": 1,
+          "problems_solved": 0,
+          "average_complexity": 0.0,
+          "common_patterns": [],
+          "progress": [
+            {
+              "timestamp": "2025-06-01T08:56:53.282179",
+              "correctness": 0,
+              "complexity": "N/A"
+            }
+          ]
+        },
+        "resume": {
+          "skills": [],
+          "last_updated": "2025-06-01T08:56:53.282179",
+          "strengths": [],
+          "weaknesses": []
+        }
+      }
+    }
+  },
+  "sessions": [
+    {
+      "session_id": "session1",
+      "user_id": "user123",
+      "timestamp": "2025-06-01T08:54:05.140150",
+      "metrics": {
+        "interview": {},
+        "dsa": {},
+        "resume": {},
+        "timestamp": "2025-06-01T08:54:05.140165"
+      }
+    },
+    {
+      "session_id": "38542cae-5732-40dc-9520-969051619ff1",
+      "user_id": "user_38542cae",
+      "timestamp": "2025-06-01T08:56:25.062735",
+      "metrics": {
+        "interview": {},
+        "dsa": {},
+        "resume": {},
+        "timestamp": "2025-06-01T08:56:25.062788"
+      }
+    },
+    {
+      "session_id": "test_session",
+      "user_id": "test_user",
+      "timestamp": "2025-06-01T08:56:53.282167",
+      "metrics": {
+        "interview": {},
+        "dsa": {},
+        "resume": {},
+        "timestamp": "2025-06-01T08:56:53.282179"
+      }
+    }
+  ],
+  "last_updated": "2025-06-01T08:56:53.282189"
+}
