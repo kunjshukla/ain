@@ -36,7 +36,10 @@ This guide explains how to deploy the AI NinjaCoach backend on Render.
    - Click on "Advanced" to expand additional settings
    - Add the following environment variables:
      - `PYTHON_VERSION`: `3.10.0`
-     - Add any API keys required for your agents (e.g., `GOOGLE_API_KEY` if using Google Generative AI)
+     - `GOOGLE_API_KEY`: Your Google API key for Generative AI (IMPORTANT: Never commit API keys to your repository)
+     - `GOOGLE_CLOUD_PROJECT_ID`: Your Google Cloud project ID
+     - `GOOGLE_CLOUD_LOCATION`: Your Google Cloud location (e.g., us-central1)
+     - `OPENAI_API_KEY`: Your OpenAI API key (IMPORTANT: Never commit API keys to your repository)
 
 6. **Create Web Service**:
    - Click "Create Web Service"
