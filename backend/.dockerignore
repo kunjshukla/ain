@@ -1,0 +1,48 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+.env
+.venv
+*.sqlite3
+*.db
+*.sql
+.DS_Store
+.git
+.gitignore
+.vscode/
+.idea/
+*.log
+*.swp
+*.swo
+*~
+# Local development settings
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Node modules if any
+node_modules/
+
+# Python virtual environment
+venv/
+
+# Database
+database/*.sqlite3
+!database/__init__.py
+
+# Logs
+logs/
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

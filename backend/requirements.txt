@@ -1,0 +1,28 @@
+# Core
+fastapi==0.95.2
+uvicorn[standard]==0.22.0
+python-dotenv==1.0.0
+
+# AI/ML
+pyautogen==0.2.0  # Version compatible with flaml 1.1.1
+langchain==0.0.230
+langchain-google-genai==0.0.4
+google-cloud-aiplatform==1.26.1
+
+# Database
+SQLAlchemy==1.4.50
+
+# Utils
+pydantic>=1.10.7,<2.0.0
+typing-extensions>=4.5.0
+
+# Additional dependencies that might be needed
+aiohttp==3.9.3
+async-timeout==4.0.3
+dataclasses-json==0.5.14
+numpy>=1.24.0
+requests>=2.31.0
+tenacity>=8.2.3
+
+# FLAML with specific version compatible with autogen
+flaml[automl]==1.1.1
