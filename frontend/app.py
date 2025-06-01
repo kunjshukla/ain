@@ -85,10 +85,14 @@ def get_simulated_resume_result(resume_text=""):
         "extracted_text": resume_text[:500] + "..." if len(resume_text) > 500 else resume_text
     }
 
-# Replace with your deployed Railway backend URL
-# BACKEND_URL = "https://ain-v2-production.up.railway.app"
+# Backend URL configuration
+import os
+
+# Get the backend URL from environment variable or use the default
+BACKEND_URL = os.environ.get("BACKEND_URL", "https://ain-backend-api.onrender.com")
+
 # For local testing, uncomment the line below
-BACKEND_URL = "http://localhost:8000"
+# BACKEND_URL = "http://localhost:8000"
 
 st.set_page_config(page_title="AI NinjaCoach", layout="wide")
 st.title("🤖 AI NinjaCoach - Smart Interview Prep")

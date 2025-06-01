@@ -75,7 +75,7 @@ tmp/
 *.bin
 
 # Streamlit cache
-.streamlit/
+# .streamlit/ - Needed for Streamlit Cloud deployment
 
 # Environment variables
 .env
