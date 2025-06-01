@@ -22,55 +22,124 @@ except ImportError:
 
 # Import agents with try/except to handle missing dependencies
 try:
-    from backend.agents.resume_analyzer import ResumeAnalyzerAgent
+    # Try relative import first
+    from agents.resume_analyzer import ResumeAnalyzerAgent
     resume_agent_available = True
 except ImportError as e:
-    print(f"Warning: ResumeAnalyzerAgent not available: {e}")
-    resume_agent_available = False
+    try:
+        # Fallback to absolute import for local development
+        from backend.agents.resume_analyzer import ResumeAnalyzerAgent
+        resume_agent_available = True
+    except ImportError as e:
+        print(f"Warning: ResumeAnalyzerAgent not available: {e}")
+        resume_agent_available = False
 
 try:
-    from backend.agents.mock_interviewer import MockInterviewerAgent
+    # Try relative import first
+    from agents.mock_interviewer import MockInterviewerAgent
     interview_agent_available = True
 except ImportError as e:
-    print(f"Warning: MockInterviewerAgent not available: {e}")
-    interview_agent_available = False
+    try:
+        # Fallback to absolute import for local development
+        from backend.agents.mock_interviewer import MockInterviewerAgent
+        interview_agent_available = True
+    except ImportError as e:
+        print(f"Warning: MockInterviewerAgent not available: {e}")
+        interview_agent_available = False
 
 try:
-    from backend.agents.dsa_evaluator import DSAEvaluatorAgent
+    # Try relative import first
+    from agents.dsa_evaluator import DSAEvaluatorAgent
     dsa_agent_available = True
 except ImportError as e:
-    print(f"Warning: DSAEvaluatorAgent not available: {e}")
-    dsa_agent_available = False
+    try:
+        # Fallback to absolute import for local development
+        from backend.agents.dsa_evaluator import DSAEvaluatorAgent
+        dsa_agent_available = True
+    except ImportError as e:
+        print(f"Warning: DSAEvaluatorAgent not available: {e}")
+        dsa_agent_available = False
 
 try:
-    from backend.agents.behavioural_coach import BehavioralCoachAgent
+    # Try relative import first
+    from agents.behavioural_coach import BehavioralCoachAgent
     behavioral_coach_available = True
 except ImportError as e:
-    print(f"Warning: BehavioralCoachAgent not available: {e}")
-    behavioral_coach_available = False
+    try:
+        # Fallback to absolute import for local development
+        from backend.agents.behavioural_coach import BehavioralCoachAgent
+        behavioral_coach_available = True
+    except ImportError as e:
+        print(f"Warning: BehavioralCoachAgent not available: {e}")
+        behavioral_coach_available = False
 
 try:
-    from backend.agents.performance_tracker import PerformanceTrackerAgent
+    # Try relative import first
+    from agents.performance_tracker import PerformanceTrackerAgent
     performance_tracker_available = True
 except ImportError as e:
-    print(f"Warning: PerformanceTrackerAgent not available: {e}")
-    performance_tracker_available = False
+    try:
+        # Fallback to absolute import for local development
+        from backend.agents.performance_tracker import PerformanceTrackerAgent
+        performance_tracker_available = True
+    except ImportError as e:
+        print(f"Warning: PerformanceTrackerAgent not available: {e}")
+        performance_tracker_available = False
 
 # Video integration removed
 
 try:
+    # Try direct import first (for when running from backend directory)
     from database import save_session, get_session, track_user_session, get_user_performance
     database_available = True
 except ImportError as e:
-    print(f"Warning: Database functions not available: {e}")
-    database_available = False
+    try:
+        # Try relative import
+        from .database import save_session, get_session, track_user_session, get_user_performance
+        database_available = True
+    except (ImportError, ValueError) as e:
+        try:
+            # Fallback to absolute import for local development
+            from backend.database import save_session, get_session, track_user_session, get_user_performance
+            database_available = True
+        except ImportError as e:
+            print(f"Warning: Database functions not available: {e}")
+            database_available = False
+            
+            # Define fallback functions to prevent errors
+            def save_session(session_id, session_type, data):
+                print(f"Mock saving session {session_id} of type {session_type}")
+                return True
+                
+            def get_session(session_id):
+                return {"session_id": session_id, "data": {}, "timestamp": datetime.now().isoformat()}
+                
+            def track_user_session(user_id, session_id, session_type, data):
+                print(f"Mock tracking session {session_id} for user {user_id}")
+                return True
+                
+            def get_user_performance(user_id):
+                return {"user_id": user_id, "sessions": [], "metrics": {}}
 
 try:
+    # Try relative import first
     from utils.pdf_parser import parse_resume_pdf, extract_text_from_pdf
     pdf_parser_available = True
 except ImportError as e:
-    print(f"Warning: PDF parser not available: {e}")
-    pdf_parser_available = False
+    try:
+        # Fallback to absolute import for local development
+        from backend.utils.pdf_parser import parse_resume_pdf, extract_text_from_pdf
+        pdf_parser_available = True
+    except ImportError as e:
+        print(f"Warning: PDF parser not available: {e}")
+        pdf_parser_available = False
+        
+        # Define fallback functions to prevent errors
+        def parse_resume_pdf(pdf_content):
+            return {"error": "PDF parser not available"}
+            
+        def extract_text_from_pdf(pdf_content):
+            return "[PDF text extraction not available]"
 
 app = FastAPI(title="AI NinjaCoach API", description="API for AI NinjaCoach platform")
 
@@ -639,8 +708,38 @@ def track_session(request: SessionRequest):
 # Video interview questions endpoint removed
 
 # ---------------- Orchestrator Agent Endpoint ---------------- #
-from backend.agents.orchestrator_agent import OrchestratorAgent
-from backend.orchestrator_schema import OrchestratorRequest, OrchestratorResponse
+try:
+    from agents.orchestrator_agent import OrchestratorAgent
+except ImportError:
+    # Fallback for local development
+    try:
+        from backend.agents.orchestrator_agent import OrchestratorAgent
+    except ImportError:
+        print("Warning: OrchestratorAgent not available")
+        OrchestratorAgent = None
+try:
+    from orchestrator_schema import OrchestratorRequest, OrchestratorResponse
+except ImportError:
+    # Fallback for local development
+    try:
+        from backend.orchestrator_schema import OrchestratorRequest, OrchestratorResponse
+    except ImportError:
+        print("Warning: Orchestrator schema not available")
+        # Define minimal schema classes to prevent errors
+        from pydantic import BaseModel
+        from typing import Dict, Any, Optional
+        
+        class OrchestratorRequest(BaseModel):
+            user_id: str
+            goal: str
+            resume: Optional[str] = None
+            code: Optional[str] = None
+            interview_answers: Optional[Dict[str, Any]] = None
+            
+        class OrchestratorResponse(BaseModel):
+            success: bool
+            message: str
+            data: Optional[Dict[str, Any]] = None
 
 @app.post("/orchestrate", response_model=OrchestratorResponse)
 def orchestrate(request: OrchestratorRequest):
