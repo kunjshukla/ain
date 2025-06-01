@@ -2,12 +2,18 @@ services:
   - type: web
     name: ain-backend-api
     env: python
-    buildCommand: pip install -r render-requirements.txt
+    buildCommand: pip install -r render-requirements.txt && python -m spacy download en_core_web_sm
     startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.0
       - key: PORT
         value: 10000
+      - key: GOOGLE_API_KEY
+        value: AIzaSyDyzvzetBQkdwVnDIjpekS0AsTTfQgJhK8
+      - key: GOOGLE_CLOUD_PROJECT_ID
+        value: language-generation
+      - key: GOOGLE_CLOUD_LOCATION
+        value: us-central1
     healthCheckPath: /health
     autoDeploy: true
