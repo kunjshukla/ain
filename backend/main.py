@@ -1,6 +1,7 @@
 # main.py
-from fastapi import FastAPI, HTTPException, Body, File, UploadFile, Form
+from fastapi import FastAPI, HTTPException, Body, File, UploadFile, Form, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 import uuid
@@ -10,6 +11,7 @@ import io
 import base64
 import time
 import os
+import platform
 
 # Load environment variables if available
 try:
@@ -70,7 +72,7 @@ except ImportError as e:
     print(f"Warning: PDF parser not available: {e}")
     pdf_parser_available = False
 
-app = FastAPI()
+app = FastAPI(title="AI NinjaCoach API", description="API for AI NinjaCoach platform")
 
 # CORS middleware
 app.add_middleware(
@@ -80,6 +82,26 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Health check endpoint for Render deployment
+@app.get("/health", status_code=status.HTTP_200_OK)
+async def health_check():
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "version": "1.0.0",
+            "python_version": platform.python_version(),
+            "agents": {
+                "resume_analyzer": resume_agent_available,
+                "mock_interviewer": interview_agent_available,
+                "dsa_evaluator": dsa_agent_available,
+                "behavioral_coach": behavioral_coach_available,
+                "performance_tracker": performance_tracker_available
+            }
+        }
+    )
 
 # Pydantic models
 class ResumeRequest(BaseModel):
