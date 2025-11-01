@@ -8,7 +8,6 @@ AI NinjaCoach is a comprehensive AI-powered interview preparation platform. It h
 - **Backend**: FastAPI app (deployable on Render, Heroku, or any cloud provider)
 
 **Live Demo:**
-- Streamlit App: [https://ai-ninjacoach.streamlit.app](https://ai-ninjacoach.streamlit.app)
 - Backend API: Deploy your own instance (instructions below)
 
 ## Features
