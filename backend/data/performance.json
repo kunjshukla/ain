@@ -119,6 +119,176 @@
           "weaknesses": []
         }
       }
+    },
+    "portfolio_demo_user": {
+      "first_seen": "2025-11-01T00:12:50.934294",
+      "last_seen": "2025-11-01T00:14:52.152388",
+      "sessions": [
+        "demo_session_001",
+        "demo_1761956092"
+      ],
+      "metrics": {
+        "interview": {
+          "total_sessions": 2,
+          "average_score": 0.0,
+          "strengths": [],
+          "weaknesses": [],
+          "progress": [
+            {
+              "timestamp": "2025-11-01T00:12:50.934319",
+              "score": 0
+            },
+            {
+              "timestamp": "2025-11-01T00:14:52.152398",
+              "score": 0
+            }
+          ]
+        },
+        "dsa": {
+          "problems_attempted": 2,
+          "problems_solved": 0,
+          "average_complexity": 0.0,
+          "common_patterns": [],
+          "progress": [
+            {
+              "timestamp": "2025-11-01T00:12:50.934319",
+              "correctness": 0,
+              "complexity": "N/A"
+            },
+            {
+              "timestamp": "2025-11-01T00:14:52.152398",
+              "correctness": 0,
+              "complexity": "N/A"
+            }
+          ]
+        },
+        "resume": {
+          "skills": [],
+          "last_updated": "2025-11-01T00:14:52.152398",
+          "strengths": [],
+          "weaknesses": []
+        }
+      }
+    },
+    "user_0ac903dd": {
+      "first_seen": "2025-11-01T00:13:42.442729",
+      "last_seen": "2025-11-01T00:13:42.442729",
+      "sessions": [
+        "0ac903dd-bb17-4aa6-96d1-fe7cc0e7830d"
+      ],
+      "metrics": {
+        "interview": {
+          "total_sessions": 1,
+          "average_score": 0.0,
+          "strengths": [],
+          "weaknesses": [],
+          "progress": [
+            {
+              "timestamp": "2025-11-01T00:13:42.442751",
+              "score": 0
+            }
+          ]
+        },
+        "dsa": {
+          "problems_attempted": 1,
+          "problems_solved": 0,
+          "average_complexity": 0.0,
+          "common_patterns": [],
+          "progress": [
+            {
+              "timestamp": "2025-11-01T00:13:42.442751",
+              "correctness": 0,
+              "complexity": "N/A"
+            }
+          ]
+        },
+        "resume": {
+          "skills": [],
+          "last_updated": "2025-11-01T00:13:42.442751",
+          "strengths": [],
+          "weaknesses": []
+        }
+      }
+    },
+    "user_fd7a594c": {
+      "first_seen": "2025-11-01T00:13:56.310252",
+      "last_seen": "2025-11-01T00:13:56.310252",
+      "sessions": [
+        "fd7a594c-a31f-486d-8106-f38b9e835363"
+      ],
+      "metrics": {
+        "interview": {
+          "total_sessions": 1,
+          "average_score": 0.0,
+          "strengths": [],
+          "weaknesses": [],
+          "progress": [
+            {
+              "timestamp": "2025-11-01T00:13:56.310273",
+              "score": 0
+            }
+          ]
+        },
+        "dsa": {
+          "problems_attempted": 1,
+          "problems_solved": 0,
+          "average_complexity": 0.0,
+          "common_patterns": [],
+          "progress": [
+            {
+              "timestamp": "2025-11-01T00:13:56.310273",
+              "correctness": 0,
+              "complexity": "N/A"
+            }
+          ]
+        },
+        "resume": {
+          "skills": [],
+          "last_updated": "2025-11-01T00:13:56.310273",
+          "strengths": [],
+          "weaknesses": []
+        }
+      }
+    },
+    "user_0cfe1c2d": {
+      "first_seen": "2025-11-01T00:14:19.365574",
+      "last_seen": "2025-11-01T00:14:19.365574",
+      "sessions": [
+        "0cfe1c2d-a437-4d0e-ad86-ce6419d56dd4"
+      ],
+      "metrics": {
+        "interview": {
+          "total_sessions": 1,
+          "average_score": 0.0,
+          "strengths": [],
+          "weaknesses": [],
+          "progress": [
+            {
+              "timestamp": "2025-11-01T00:14:19.365601",
+              "score": 0
+            }
+          ]
+        },
+        "dsa": {
+          "problems_attempted": 1,
+          "problems_solved": 0,
+          "average_complexity": 0.0,
+          "common_patterns": [],
+          "progress": [
+            {
+              "timestamp": "2025-11-01T00:14:19.365601",
+              "correctness": 0,
+              "complexity": "N/A"
+            }
+          ]
+        },
+        "resume": {
+          "skills": [],
+          "last_updated": "2025-11-01T00:14:19.365601",
+          "strengths": [],
+          "weaknesses": []
+        }
+      }
     }
   },
   "sessions": [
@@ -154,7 +324,62 @@
         "resume": {},
         "timestamp": "2025-06-01T08:56:53.282179"
       }
+    },
+    {
+      "session_id": "demo_session_001",
+      "user_id": "portfolio_demo_user",
+      "timestamp": "2025-11-01T00:12:50.934294",
+      "metrics": {
+        "interview": {},
+        "dsa": {},
+        "resume": {},
+        "timestamp": "2025-11-01T00:12:50.934319"
+      }
+    },
+    {
+      "session_id": "0ac903dd-bb17-4aa6-96d1-fe7cc0e7830d",
+      "user_id": "user_0ac903dd",
+      "timestamp": "2025-11-01T00:13:42.442729",
+      "metrics": {
+        "interview": {},
+        "dsa": {},
+        "resume": {},
+        "timestamp": "2025-11-01T00:13:42.442751"
+      }
+    },
+    {
+      "session_id": "fd7a594c-a31f-486d-8106-f38b9e835363",
+      "user_id": "user_fd7a594c",
+      "timestamp": "2025-11-01T00:13:56.310252",
+      "metrics": {
+        "interview": {},
+        "dsa": {},
+        "resume": {},
+        "timestamp": "2025-11-01T00:13:56.310273"
+      }
+    },
+    {
+      "session_id": "0cfe1c2d-a437-4d0e-ad86-ce6419d56dd4",
+      "user_id": "user_0cfe1c2d",
+      "timestamp": "2025-11-01T00:14:19.365574",
+      "metrics": {
+        "interview": {},
+        "dsa": {},
+        "resume": {},
+        "timestamp": "2025-11-01T00:14:19.365601"
+      }
+    },
+    {
+      "session_id": "demo_1761956092",
+      "user_id": "portfolio_demo_user",
+      "timestamp": "2025-11-01T00:14:52.152388",
+      "metrics": {
+        "interview": {},
+        "dsa": {},
+        "resume": {},
+        "timestamp": "2025-11-01T00:14:52.152398"
+      }
     }
   ],
-  "last_updated": "2025-06-01T08:56:53.282189"
+  "last_updated": "2025-11-01T00:14:52.152435"
 }

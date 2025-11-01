@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI NinjaCoach - Voice Interview Platform</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 60px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            max-width: 600px;
+            text-align: center;
+        }
+        h1 { font-size: 3rem; margin-bottom: 20px; }
+        p { font-size: 1.2rem; margin-bottom: 40px; opacity: 0.9; }
+        .button {
+            display: inline-block;
+            padding: 15px 40px;
+            margin: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            border-radius: 10px;
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .button:hover {
+            background: white;
+            color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        .button.primary {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #333;
+            border-color: #ffd700;
+        }
+        .status {
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+        .status-good { color: #4ade80; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🥷 AI NinjaCoach</h1>
+        <p>Voice-Powered Interview Practice Platform</p>
+        
+        <a href="voice_interview.html" class="button primary">🎙️ Start Voice Interview</a>
+        <a href="voice-test-standalone.html" class="button">🧪 Test Voice System</a>
+        
+        <div class="status">
+            <div>Backend Status: <span class="status-good" id="backend-status">Checking...</span></div>
+            <div>Voice Services: <span class="status-good" id="voice-status">Checking...</span></div>
+        </div>
+    </div>
+
+    <script>
+        // Check backend health
+        fetch('http://localhost:8000/health')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('backend-status').textContent = '✅ Online';
+            })
+            .catch(e => {
+                document.getElementById('backend-status').textContent = '❌ Offline';
+                document.getElementById('backend-status').className = '';
+            });
+
+        // Check voice services
+        fetch('http://localhost:8000/api/voice/stt/health')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('voice-status').textContent = '✅ Ready';
+            })
+            .catch(e => {
+                document.getElementById('voice-status').textContent = '❌ Not Ready';
+                document.getElementById('voice-status').className = '';
+            });
+    </script>
+</body>
+</html>

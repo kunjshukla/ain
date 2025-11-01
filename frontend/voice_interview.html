@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI NinjaCoach - Voice Interview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            max-width: 800px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ffd700, #ffff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .status {
+            font-size: 1rem;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .question-display {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            line-height: 1.6;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 150px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .mic-icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .recording {
+            animation: pulse 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { opacity: 1; }
+            to { opacity: 0.5; }
+        }
+
+        .transcript {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .feedback {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .score {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .settings {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        select {
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 1rem;
+        }
+
+        select option {
+            background: #333;
+            color: white;
+        }
+
+        .audio-player {
+            margin: 20px 0;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid rgba(244, 67, 54, 0.5);
+            color: #ffcccb;
+        }
+
+        .success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            color: #c8e6c9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🥷 AI NinjaCoach</div>
+            <div class="subtitle">Voice-Powered Interview Practice</div>
+        </div>
+
+        <div class="status" id="status">
+            Ready to start your voice interview
+        </div>
+
+        <div class="settings">
+            <div class="setting-group">
+                <label>Domain:</label>
+                <select id="domain">
+                    <option value="Software Engineering">Software Engineering</option>
+                    <option value="Data Science">Data Science</option>
+                    <option value="System Design">System Design</option>
+                    <option value="Behavioral">Behavioral</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label>Difficulty:</label>
+                <select id="difficulty">
+                    <option value="Easy">Easy</option>
+                    <option value="Medium" selected>Medium</option>
+                    <option value="Hard">Hard</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label>Level:</label>
+                <select id="userLevel">
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate" selected>Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="question-display" id="questionDisplay">
+            <div class="question-text" id="questionText">
+                Click "Start Interview" to begin your voice practice session
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="startBtn" onclick="startInterview()">
+                <span>🚀</span> Start Interview
+            </button>
+            <button class="btn btn-secondary hidden" id="recordBtn" onclick="toggleRecording()">
+                <svg class="mic-icon" viewBox="0 0 24 24">
+                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                    <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                </svg>
+                Record Answer
+            </button>
+            <button class="btn btn-danger hidden" id="nextBtn" onclick="nextQuestion()">
+                <span>⏭️</span> Next Question
+            </button>
+        </div>
+
+        <div class="transcript hidden" id="transcript">
+            <h3>Your Answer:</h3>
+            <div id="transcriptText"></div>
+        </div>
+
+        <div class="feedback hidden" id="feedback">
+            <div class="score" id="score"></div>
+            <div id="feedbackText"></div>
+            <div id="hints"></div>
+        </div>
+
+        <div class="audio-player hidden" id="audioPlayer">
+            <audio controls id="audioElement"></audio>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let sessionId = null;
+        let currentQuestion = null;
+        let isRecording = false;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let currentQuestionCount = 0;
+
+        // API base URL - update this to match your backend
+        const API_BASE = 'http://localhost:8000/api/voice';
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus('Ready to start your voice interview');
+            checkBackendHealth();
+        });
+
+        async function checkBackendHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/interview/health`);
+                const health = await response.json();
+                
+                if (health.status === 'healthy') {
+                    updateStatus('✅ All systems ready - Start your interview!', 'success');
+                } else {
+                    updateStatus('⚠️ Some services unavailable - Basic functionality available', 'error');
+                }
+            } catch (error) {
+                updateStatus('❌ Backend unavailable - Please start the backend server', 'error');
+            }
+        }
+
+        async function startInterview() {
+            const domain = document.getElementById('domain').value;
+            const difficulty = document.getElementById('difficulty').value;
+            const userLevel = document.getElementById('userLevel').value;
+
+            updateStatus('Starting interview session...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/interview/start`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        domain: domain,
+                        difficulty: difficulty,
+                        user_level: userLevel
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    sessionId = result.session_id;
+                    currentQuestion = result.question;
+                    displayQuestion(currentQuestion);
+                    
+                    // Show interview controls
+                    document.getElementById('startBtn').classList.add('hidden');
+                    document.getElementById('recordBtn').classList.remove('hidden');
+                    
+                    updateStatus('🎯 Interview started! Read the question and click "Record Answer"', 'success');
+                    
+                    // Read question aloud
+                    speakText(currentQuestion);
+                } else {
+                    throw new Error(result.message || 'Failed to start interview');
+                }
+            } catch (error) {
+                console.error('Error starting interview:', error);
+                updateStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function displayQuestion(question) {
+            document.getElementById('questionText').textContent = question;
+            currentQuestionCount++;
+        }
+
+        async function toggleRecording() {
+            if (!isRecording) {
+                await startRecording();
+            } else {
+                await stopRecording();
+            }
+        }
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    await processAudioAnswer(audioBlob);
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+
+                // Update UI
+                const recordBtn = document.getElementById('recordBtn');
+                recordBtn.innerHTML = '<svg class="mic-icon recording" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg> Stop Recording';
+                recordBtn.classList.remove('btn-secondary');
+                recordBtn.classList.add('btn-danger');
+                
+                updateStatus('🎤 Recording your answer... Click "Stop Recording" when done');
+                
+            } catch (error) {
+                console.error('Error starting recording:', error);
+                updateStatus('❌ Microphone access denied or not available', 'error');
+            }
+        }
+
+        async function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                isRecording = false;
+
+                // Update UI
+                const recordBtn = document.getElementById('recordBtn');
+                recordBtn.innerHTML = '<div class="loading"></div> Processing...';
+                recordBtn.disabled = true;
+                
+                updateStatus('🔄 Processing your answer...');
+            }
+        }
+
+        async function processAudioAnswer(audioBlob) {
+            try {
+                // Step 1: Convert speech to text
+                updateStatus('🔄 Converting speech to text...');
+                const transcriptResult = await speechToText(audioBlob);
+                
+                if (!transcriptResult.success) {
+                    throw new Error('Failed to transcribe audio');
+                }
+
+                const userAnswer = transcriptResult.text;
+                displayTranscript(userAnswer);
+
+                // Step 2: Process answer with AI
+                updateStatus('🤖 AI analyzing your answer...');
+                const analysisResult = await processAnswer(userAnswer);
+                
+                if (analysisResult.success) {
+                    displayFeedback(analysisResult);
+                    
+                    // Step 3: Convert feedback to speech
+                    await speakFeedback(analysisResult.feedback.feedback_text);
+                    
+                    // Show next question button
+                    document.getElementById('nextBtn').classList.remove('hidden');
+                    
+                    updateStatus('✅ Analysis complete! Review feedback and click "Next Question"', 'success');
+                } else {
+                    throw new Error('Failed to analyze answer');
+                }
+
+            } catch (error) {
+                console.error('Error processing answer:', error);
+                updateStatus(`❌ Error: ${error.message}`, 'error');
+            } finally {
+                // Reset record button
+                const recordBtn = document.getElementById('recordBtn');
+                recordBtn.innerHTML = '<svg class="mic-icon" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg> Record Answer';
+                recordBtn.classList.remove('btn-danger');
+                recordBtn.classList.add('btn-secondary');
+                recordBtn.disabled = false;
+            }
+        }
+
+        async function speechToText(audioBlob) {
+            const formData = new FormData();
+            formData.append('file', audioBlob, 'audio.wav');
+
+            const response = await fetch(`${API_BASE}/stt`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            return {
+                success: response.ok,
+                text: result.text || '',
+                error: result.detail || null
+            };
+        }
+
+        async function processAnswer(userAnswer) {
+            const response = await fetch(`${API_BASE}/interview/answer`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    user_answer: userAnswer,
+                    question: currentQuestion,
+                    domain: document.getElementById('domain').value,
+                    difficulty: document.getElementById('difficulty').value
+                })
+            });
+
+            return await response.json();
+        }
+
+        async function speakText(text) {
+            try {
+                const response = await fetch(`${API_BASE}/tts`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        language: 'en'
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    const audioData = `data:audio/mp3;base64,${result.audio_base64}`;
+                    const audio = new Audio(audioData);
+                    audio.play();
+                }
+            } catch (error) {
+                console.warn('Text-to-speech failed:', error);
+            }
+        }
+
+        async function speakFeedback(feedbackText) {
+            // Show audio player
+            document.getElementById('audioPlayer').classList.remove('hidden');
+            await speakText(feedbackText);
+        }
+
+        function displayTranscript(text) {
+            document.getElementById('transcriptText').textContent = text;
+            document.getElementById('transcript').classList.remove('hidden');
+        }
+
+        function displayFeedback(result) {
+            const evaluation = result.evaluation;
+            const feedback = result.feedback;
+
+            // Display score
+            document.getElementById('score').textContent = `Score: ${evaluation.score}/10`;
+
+            // Display feedback
+            let feedbackHtml = `<h3>💡 Feedback:</h3><p>${feedback.feedback_text}</p>`;
+            
+            if (feedback.follow_up_hints && feedback.follow_up_hints.length > 0) {
+                feedbackHtml += `<h4>🔍 Follow-up Hints:</h4><ul>`;
+                feedback.follow_up_hints.forEach(hint => {
+                    feedbackHtml += `<li>${hint}</li>`;
+                });
+                feedbackHtml += `</ul>`;
+            }
+
+            if (feedback.next_steps && feedback.next_steps.length > 0) {
+                feedbackHtml += `<h4>📚 Next Steps:</h4><ul>`;
+                feedback.next_steps.forEach(step => {
+                    feedbackHtml += `<li>${step}</li>`;
+                });
+                feedbackHtml += `</ul>`;
+            }
+
+            document.getElementById('feedbackText').innerHTML = feedbackHtml;
+            document.getElementById('feedback').classList.remove('hidden');
+        }
+
+        async function nextQuestion() {
+            // Hide feedback and transcript
+            document.getElementById('feedback').classList.add('hidden');
+            document.getElementById('transcript').classList.add('hidden');
+            document.getElementById('audioPlayer').classList.add('hidden');
+            document.getElementById('nextBtn').classList.add('hidden');
+
+            // The backend already provided the next question in the previous response
+            // In a more sophisticated implementation, you might want to fetch it separately
+            updateStatus('🎯 Next question ready! Click "Record Answer" to continue');
+            
+            // For now, we'll simulate getting the next question
+            // In the actual implementation, this would come from the previous API response
+            setTimeout(() => {
+                updateStatus('🎯 Ready for your next answer!', 'success');
+            }, 1000);
+        }
+
+        function updateStatus(message, type = '') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+
+        // Utility function to handle API errors
+        function handleAPIError(error, context) {
+            console.error(`${context}:`, error);
+            updateStatus(`❌ ${context}: ${error.message}`, 'error');
+        }
+    </script>
+</body>
+</html>

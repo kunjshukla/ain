@@ -16,6 +16,8 @@ astunparse>=1.6.3  # Required for DSA evaluator
 
 # NLP Processing
 spacy==3.7.2
+sentence-transformers>=2.7.0  # For RAG embeddings (requires compatible huggingface_hub)
+scikit-learn==1.3.2  # For cosine similarity and ML utilities
 # Note: spaCy models are installed in the Dockerfile
 # The large model is optional and will be used if available
 
@@ -25,10 +27,35 @@ numpy==1.24.3
 
 # LLM Integration
 langchain>=0.0.200,<0.1.0
-langchain-google-genai>=0.0.5,<0.1.0
-google-generativeai>=0.3.0,<0.4.0
 python-dateutil>=2.8.2,<3.0.0
+
+
+# Alternative lighter option for Whisper
+# faster-whisper==0.10.0  # Uncomment if you want to use this instead
+
+# Ollama integration
+ollama==0.1.7
 
 # Multi-Agent Core - Optional, will be mocked if not available
 # pyautogen and crewai are commented out due to dependency conflicts
 # The system will use fallback implementations
+
+# Asynchronous Task Processing (AI NinjaCoach Task System)
+celery==5.3.4
+redis==5.0.1
+pymongo==4.6.0
+
+# Real-time Communication
+python-socketio==5.10.0
+
+# Additional utilities for enhanced functionality
+python-dateutil>=2.8.2
+
+# Enhanced STT Services
+aiohttp==3.9.1
+aiofiles==23.2.0
+google-cloud-speech==2.22.0  # For Google STT
+azure-cognitiveservices-speech==1.34.0  # For Azure STT
+
+# Better Whisper model (optional upgrade)
+openai-whisper>=20231117  # Latest version with better models

@@ -1,88 +1,47 @@
-# Python cache files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Virtual environments
 venv/
 env/
 ENV/
-.env
-
-# IDE files
-.idea/
-.vscode/
-*.swp
-*.swo
-.DS_Store
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# Local data files
-*.db
-*.sqlite3
-data/user_sessions.json
-data/performance_data.json
+.venv
 
 # Logs
-logs/
 *.log
+logs/
+*.log.*
 
-# Media files (large files)
-*.mp4
-*.avi
-*.mov
-*.wav
-*.mp3
-*.pdf
-uploads/
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# Dependency directories
-node_modules/
+# OS
+.DS_Store
+Thumbs.db
 
-# Spacy models (can be downloaded during deployment)
-backend/en_core_web_*
+# Project specific
+backend/data/
+*.db
+*.sqlite
+.pytest_cache/
+.coverage
+htmlcov/
 
-# Temporary files
-temp/
-tmp/
-.temp/
-.tmp/
-
-# Large ML model files
-*.h5
-*.pkl
-*.joblib
-*.model
-*.bin
-
-# Streamlit cache
-# .streamlit/ - Needed for Streamlit Cloud deployment
-
-# Environment variables
+# Environment
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
 
-# Except example env files
-!.env.example
+# Node
+node_modules/
+package-lock.json
+
+# Build
+dist/
+build/
+*.egg-info/
